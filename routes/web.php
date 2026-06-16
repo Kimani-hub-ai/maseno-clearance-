@@ -18,7 +18,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Authenticated - Generic Redirect
 |--------------------------------------------------------------------------
-| After login, send users to their role-specific dashboard.
 */
 
 Route::middleware('auth')->group(function () {
@@ -35,70 +34,17 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Student Routes
+| Role-Specific Route Files
 |--------------------------------------------------------------------------
+| Student routes now live in routes/student.php (Developer A's track).
+| Department/Registrar/Admin routes will live in their own files
+| (Developer B's track) — require them here once built.
 */
 
-Route::middleware(['auth', 'role:student'])
-    ->prefix('student')
-    ->name('student.')
-    ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.student');
-        })->name('dashboard');
+require __DIR__.'/student.php';
 
-        // Week 3: application form, document upload, status tracker
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Department Officer Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'role:officer'])
-    ->prefix('department')
-    ->name('department.')
-    ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.department');
-        })->name('dashboard');
-
-        // Week 4: pending requests, approve/reject
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Registrar Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'role:registrar'])
-    ->prefix('registrar')
-    ->name('registrar.')
-    ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.registrar');
-        })->name('dashboard');
-
-        // Week 5: validate eligibility, overrides, analytics
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Admin Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'role:admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.admin');
-        })->name('dashboard');
-
-        // Week 5: manage users, departments, settings
-    });
+// require __DIR__.'/department.php';   // Developer B
+// require __DIR__.'/registrar.php';    // Developer B
+// require __DIR__.'/admin.php';        // Developer B
 
 require __DIR__.'/auth.php';
