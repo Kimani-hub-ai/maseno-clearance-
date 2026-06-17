@@ -49,6 +49,14 @@ Route::middleware(['auth', 'role:student'])
 
         // Week 3: application form, document upload, status tracker
     });
+   
+  Route::get('/student/apply', function () {
+    return view('student.apply');
+})->name('student.apply');
+
+Route::get('/student/status', function () {
+    return view('student.status');
+})->name('student.status');
 
 /*
 |--------------------------------------------------------------------------
