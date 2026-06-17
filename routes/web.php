@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 | Public Routes
 |--------------------------------------------------------------------------
 */
-
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
@@ -19,9 +17,7 @@ Route::get('/', function () {
 | Authenticated - Generic Redirect
 |--------------------------------------------------------------------------
 */
-
 Route::middleware('auth')->group(function () {
-
     Route::get('/dashboard', function () {
         $user = Auth::user();
         return redirect()->route($user->dashboardRoute());
@@ -34,10 +30,9 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Role-Specific Route Files
+| Student Routes
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'role:student'])
     ->prefix('student')
     ->name('student.')
@@ -46,7 +41,17 @@ Route::middleware(['auth', 'role:student'])
             return view('dashboards.student');
         })->name('dashboard');
 
-        // Week 3: application form, document upload, status tracker
+        Route::get('/apply', function () {
+            return view('student.apply');
+        })->name('apply');
+
+Route::post('/apply', function () {
+    return back()->with('success', 'Application submitted successfully!');
+})->name('apply.submit');
+
+        Route::get('/status', function () {
+            return view('student.status');
+        })->name('status');
     });
 
 /*
@@ -65,13 +70,11 @@ Route::middleware(['auth', 'role:officer'])
 
         // Week 4: pending requests, approve/reject
     });
-
 /*
 |--------------------------------------------------------------------------
 | Registrar Routes
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'role:registrar'])
     ->prefix('registrar')
     ->name('registrar.')
@@ -88,7 +91,6 @@ Route::middleware(['auth', 'role:registrar'])
 | Admin Routes
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
