@@ -116,3 +116,11 @@ Route::middleware(['auth', 'role:admin'])
     });
 
 require __DIR__.'/auth.php';
+
+//route to staff clearance review endpoint
+use App\Http\Controllers\Staff\DepartmentClearanceController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Staff Dashboard Endpoint to approve/reject a student checkpoint
+    Route::post('/staff/clearances/{checkpoint}/review', [DepartmentClearanceController::class, 'review']);
+});
