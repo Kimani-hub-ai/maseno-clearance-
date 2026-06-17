@@ -34,14 +34,12 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Role-Specific Route Files
+| Role-Specific & Public Route Files
 |--------------------------------------------------------------------------
-| Student routes now live in routes/student.php (Developer A's track).
-| Department/Registrar/Admin routes will live in their own files
-| (Developer B's track) — require them here once built.
 */
 
 require __DIR__.'/student.php';
+require __DIR__.'/public.php';
 
 // require __DIR__.'/department.php';   // Developer B
 // require __DIR__.'/registrar.php';    // Developer B

@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\DB;
 
 class ClearanceService
 {
+    public function __construct(
+        protected CertificateService $certificateService,
+        protected NotificationService $notificationService
+    ) {
+    }
+
     /**
      * Create a new clearance application for a student and
      * auto-generate a pending department_clearances row for
@@ -45,6 +51,9 @@ class ClearanceService
      * Re-evaluate an application's overall status based on its
      * department_clearances rows. Call this after every officer
      * approve/reject action.
+     *
+     * When the application becomes fully cleared, this automatically
+     * triggers certificate generation and notifies the student.
      */
     public function refreshApplicationStatus(ClearanceApplication $application): void
     {
@@ -54,10 +63,23 @@ class ClearanceService
         }
 
         if ($application->isFullyCleared()) {
+            $wasAlreadyCleared = $application->status === ClearanceStatus::Cleared;
+
             $application->update([
                 'status' => ClearanceStatus::Cleared,
-                'completed_at' => now(),
+                'completed_at' => $application->completed_at ?? now(),
             ]);
+
+            // Only generate the certificate and notify once, the first
+            // time the application transitions into Cleared.
+            if (!$wasAlreadyCleared) {
+                $certificate = $this->certificateService->generateForApplication($application);
+
+                $this->notificationService->notifyCertificateReady(
+                    $application->student->user
+                );
+            }
+
             return;
         }
 

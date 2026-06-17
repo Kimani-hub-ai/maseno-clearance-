@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Student\ClearanceController;
+use App\Http\Controllers\Student\CertificateController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:student'])
@@ -17,4 +18,7 @@ Route::middleware(['auth', 'role:student'])
             Route::post('/documents', [ClearanceController::class, 'uploadDocument'])->name('documents.upload');
             Route::get('/documents/{document}/download', [ClearanceController::class, 'downloadDocument'])->name('documents.download');
         });
+
+        Route::get('/certificate/{certificate}/download', [CertificateController::class, 'download'])
+            ->name('certificate.download');
     });

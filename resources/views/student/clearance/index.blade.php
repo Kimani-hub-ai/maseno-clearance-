@@ -144,9 +144,15 @@
                 </div>
 
                 {{-- Certificate (if cleared) --}}
-                 <p class="text-sm text-gray-500">Certificate download will be available here once the certificate system is built.</p>
-                    </div>
-                @endif
-        </div>
+                 @if ($application->certificate && $application->certificate->pdf_path)
+                     <a href="{{ route('student.certificate.download', $application->certificate) }}"
+                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700">
+                         Download Clearance Certificate
+                       </a>
+                  @else
+                     <p class="text-sm text-gray-500">Certificate is being generated. Check back shortly.</p>
+                  @endif
+         </div>
     </div>
+  @endif
 </x-app-layout>
