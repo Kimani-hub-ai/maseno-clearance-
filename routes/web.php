@@ -1,5 +1,12 @@
 <?php
+
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Staff\DepartmentClearanceController;
+use App\Http\Controllers\Admin\AdminOfficerController;
+use App\Http\Controllers\Student\ClearanceController;
+use App\Http\Controllers\Student\CertificateController;
+use App\Http\Controllers\Registrar\RegistrarController;
+use App\Http\Controllers\Public\CertificateVerificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -8,19 +15,20 @@ use Illuminate\Support\Facades\Auth;
 | Public Routes
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated - Generic Redirect
+| Authenticated — Generic Redirect
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
-        $user = Auth::user();
-        return redirect()->route($user->dashboardRoute());
+        return redirect()->route(Auth::user()->dashboardRoute());
     })->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -30,41 +38,19 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Role-Specific & Public Route Files
+| Student Routes
 |--------------------------------------------------------------------------
 */
 
 require __DIR__.'/student.php';
-require __DIR__.'/public.php';
-/*require __DIR__.'/department.php'; */
-/*require __DIR__.'/registrar.php'; */
-/*require __DIR__.'/admin.php'; */
 
 /*
 |--------------------------------------------------------------------------
-| Student Routes
+| Public Certificate Verification Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:student'])
-    ->prefix('student')
-    ->name('student.')
-    ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.student');
-        })->name('dashboard');
 
-        Route::get('/apply', function () {
-            return view('student.apply');
-        })->name('apply');
-
-Route::post('/apply', function () {
-    return back()->with('success', 'Application submitted successfully!');
-})->name('apply.submit');
-
-        Route::get('/status', function () {
-            return view('student.status');
-        })->name('status');
-    });
+require __DIR__.'/public.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -76,27 +62,27 @@ Route::middleware(['auth', 'role:officer'])
     ->prefix('department')
     ->name('department.')
     ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.department');
-        })->name('dashboard');
-
-
-        // Week 4: pending requests, approve/reject
+        Route::get('/dashboard', [DepartmentClearanceController::class, 'index'])
+            ->name('dashboard');
+        Route::post('/clearances/{checkpoint}/review', [DepartmentClearanceController::class, 'review'])
+            ->name('clearance.review');
     });
+
 /*
 |--------------------------------------------------------------------------
 | Registrar Routes
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'role:registrar'])
     ->prefix('registrar')
     ->name('registrar.')
     ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.registrar');
-        })->name('dashboard');
-
-        // Week 5: validate eligibility, overrides, analytics
+        Route::get('/dashboard', [RegistrarController::class, 'index'])->name('dashboard');
+        Route::get('/applications/{application}', [RegistrarController::class, 'show'])
+            ->name('applications.show');
+        Route::post('/applications/{application}/issue-certificate', [RegistrarController::class, 'issueCertificate'])
+            ->name('applications.issue-certificate');
     });
 
 /*
@@ -104,23 +90,19 @@ Route::middleware(['auth', 'role:registrar'])
 | Admin Routes
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboards.admin');
-        })->name('dashboard');
-
-        // Week 5: manage users, departments, settings
+        Route::get('/dashboard', [AdminOfficerController::class, 'index'])->name('dashboard');
+        Route::post('/officers', [AdminOfficerController::class, 'store'])->name('officers.store');
     });
 
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
+
 require __DIR__.'/auth.php';
-
-//route to staff clearance review endpoint
-use App\Http\Controllers\Staff\DepartmentClearanceController;
-
-Route::middleware('auth:sanctum')->group(function () {
-    // Staff Dashboard Endpoint to approve/reject a student checkpoint
-    Route::post('/staff/clearances/{checkpoint}/review', [DepartmentClearanceController::class, 'review']);
-});

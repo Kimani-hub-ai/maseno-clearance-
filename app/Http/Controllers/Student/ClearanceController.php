@@ -13,13 +13,10 @@ use Illuminate\View\View;
 
 class ClearanceController extends Controller
 {
-    public function __construct(protected ClearanceService $clearanceService)
-    {
-    }
+    public function __construct(protected ClearanceService $clearanceService) {}
 
     /**
-     * Show the student's dashboard: current application status,
-     * or a prompt to apply if none exists yet.
+     * Student dashboard / application status page.
      */
     public function index(): View
     {
@@ -31,22 +28,22 @@ class ClearanceController extends Controller
             ->first();
 
         return view('student.clearance.index', [
-            'student' => $student,
+            'student'     => $student,
             'application' => $application,
         ]);
     }
 
     /**
-     * Show the "apply for clearance" form.
+     * Show the application form.
      */
     public function create(): View|RedirectResponse
     {
-        $student = Auth::user()->student;
+        $student      = Auth::user()->student;
         $academicYear = $this->currentAcademicYear();
 
         if ($this->clearanceService->hasActiveApplication($student, $academicYear)) {
             return redirect()->route('student.clearance.index')
-                ->with('info', 'You already have an active clearance application.');
+                ->with('info', 'You already have an active application for this academic year.');
         }
 
         return view('student.clearance.create', [
@@ -55,43 +52,60 @@ class ClearanceController extends Controller
     }
 
     /**
-     * Submit a new clearance application.
+     * Submit a new application.
+     * Accepts full_name, application_type, and optional remarks from the form.
      */
     public function store(Request $request): RedirectResponse
     {
-        $student = Auth::user()->student;
+        $validated = $request->validate([
+            'full_name'        => 'required|string|max:255',
+            'application_type' => 'required|in:graduation,deferral,transfer,withdrawal,other',
+            'remarks'          => 'nullable|string|max:1000',
+        ]);
+
+        $student      = Auth::user()->student;
         $academicYear = $this->currentAcademicYear();
 
         if ($this->clearanceService->hasActiveApplication($student, $academicYear)) {
             return redirect()->route('student.clearance.index')
-                ->with('info', 'You already have an active clearance application.');
+                ->with('info', 'You already have an active application for this academic year.');
         }
 
-        $this->clearanceService->createApplication($student, $academicYear);
+        // Update student's full_name if they corrected it on the form
+        if ($student->full_name !== $validated['full_name']) {
+            $student->update(['full_name' => $validated['full_name']]);
+        }
+
+        $this->clearanceService->createApplication(
+            $student,
+            $academicYear,
+            $validated['application_type'],
+            $validated['remarks'] ?? null
+        );
 
         return redirect()->route('student.clearance.index')
-            ->with('success', 'Your clearance application has been submitted to all departments.');
+            ->with('success', 'Your application has been submitted to all departments for review.');
     }
 
     /**
-     * Upload a supporting document for the active application.
+     * Upload a supporting document.
      */
     public function uploadDocument(Request $request): RedirectResponse
     {
         $request->validate([
-            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
+            'document'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'department_id' => 'nullable|exists:departments,id',
         ]);
 
         $student = Auth::user()->student;
 
         $application = $student->clearanceApplications()
-            ->whereIn('status', ['submitted', 'in_progress'])
+            ->whereIn('status', ['pending', 'approved'])
             ->latest('created_at')
             ->first();
 
         if (!$application) {
-            return back()->with('error', 'You need an active clearance application before uploading documents.');
+            return back()->with('error', 'No active application found. Please submit an application first.');
         }
 
         $file = $request->file('document');
@@ -99,38 +113,34 @@ class ClearanceController extends Controller
 
         Document::create([
             'application_id' => $application->id,
-            'department_id' => $request->department_id,
-            'original_name' => $file->getClientOriginalName(),
-            'stored_path' => $path,
-            'mime_type' => $file->getClientMimeType(),
-            'file_size' => $file->getSize(),
+            'department_id'  => $request->department_id,
+            'original_name'  => $file->getClientOriginalName(),
+            'stored_path'    => $path,
+            'mime_type'      => $file->getClientMimeType(),
+            'file_size'      => $file->getSize(),
         ]);
 
         return back()->with('success', 'Document uploaded successfully.');
     }
 
     /**
-     * Download/view an uploaded document (student can only access their own).
+     * Download an uploaded document (student can only access their own).
      */
     public function downloadDocument(Document $document)
     {
         $student = Auth::user()->student;
 
-        abort_unless(
-            $document->application->student_id === $student->id,
-            403
-        );
+        abort_unless($document->application->student_id === $student->id, 403);
 
         return Storage::disk('local')->download($document->stored_path, $document->original_name);
     }
 
     /**
-     * Determine the current academic year string, e.g. "2025/2026".
-     * Kenyan academic years typically run Sept-Aug; adjust as needed.
+     * Current academic year string, e.g. "2025/2026".
      */
     protected function currentAcademicYear(): string
     {
-        $now = now();
+        $now  = now();
         $year = $now->month >= 9 ? $now->year : $now->year - 1;
         return $year . '/' . ($year + 1);
     }

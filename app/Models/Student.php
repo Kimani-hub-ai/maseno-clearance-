@@ -12,7 +12,7 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'reg_number',
-        'full_name',
+        'full_name',      // Used in clearance form and certificate
         'faculty',
         'department',
         'programme',
@@ -20,6 +20,10 @@ class Student extends Model
         'phone',
         'status',
     ];
+
+    // -------------------------------------------------------------------------
+    // Relationships
+    // -------------------------------------------------------------------------
 
     public function user()
     {
@@ -31,13 +35,27 @@ class Student extends Model
         return $this->hasMany(ClearanceApplication::class);
     }
 
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
     /**
-     * Get the current academic year's application, if any.
+     * Get the most recent clearance application (with all relations for display).
+     * Returns null if none exists.
      */
-    public function currentApplication()
+    public function currentApplication(): ?ClearanceApplication
     {
         return $this->clearanceApplications()
+            ->with(['departmentClearances.department', 'documents', 'certificate'])
             ->latest('created_at')
             ->first();
+    }
+
+    /**
+     * Display-friendly name: falls back to linked user name if full_name blank.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->full_name ?: ($this->user?->name ?? 'Unknown Student');
     }
 }

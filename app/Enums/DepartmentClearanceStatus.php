@@ -11,9 +11,18 @@ enum DepartmentClearanceStatus: string
     public function label(): string
     {
         return match($this) {
-            self::Pending  => 'Awaiting Review',
-            self::Approved => 'Approved',
-            self::Rejected => 'Rejected',
+            DepartmentClearanceStatus::Pending  => 'Pending',
+            DepartmentClearanceStatus::Approved => 'Approved',
+            DepartmentClearanceStatus::Rejected => 'Rejected',
+        };
+    }
+
+    public function color(): string
+    {
+        return match($this) {
+            DepartmentClearanceStatus::Pending  => 'yellow',
+            DepartmentClearanceStatus::Approved => 'green',
+            DepartmentClearanceStatus::Rejected => 'red',
         };
     }
 }

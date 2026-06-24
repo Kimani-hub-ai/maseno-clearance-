@@ -15,7 +15,7 @@
                         Welcome, {{ auth()->user()->name }}!
                     </h3>
                     <p class="text-sm text-gray-500 mt-1">
-                        Use the options below to manage your clearance application.
+                        Use the options below to manage your university application request.
                     </p>
                 </div>
             </div>
@@ -24,22 +24,22 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
                 {{-- Apply Card --}}
-                <a href="/student/apply"
+                <a href="{{ route('student.clearance.create') }}"
                     class="bg-white shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
                     <div class="text-blue-600 text-3xl mb-3">📋</div>
-                    <h4 class="font-semibold text-gray-800">Apply for Clearance</h4>
+                    <h4 class="font-semibold text-gray-800">New Application</h4>
                     <p class="text-sm text-gray-500 mt-1">
-                        Submit a new clearance application.
+                        Submit a new request — graduation, deferral, transfer, or other.
                     </p>
                 </a>
 
                 {{-- Status Card --}}
-                <a href="/student/status"
+                <a href="{{ route('student.clearance.index') }}"
                     class="bg-white shadow-sm sm:rounded-lg p-6 hover:shadow-md transition">
                     <div class="text-yellow-500 text-3xl mb-3">📊</div>
-                    <h4 class="font-semibold text-gray-800">Track Status</h4>
+                    <h4 class="font-semibold text-gray-800">Track My Application</h4>
                     <p class="text-sm text-gray-500 mt-1">
-                        Check your clearance status per department.
+                        View department approval status and any remarks.
                     </p>
                 </a>
 

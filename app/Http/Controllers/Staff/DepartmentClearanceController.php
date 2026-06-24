@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\DepartmentClearance;
 use App\Services\ClearanceService;
+use App\Enums\DepartmentClearanceStatus;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class DepartmentClearanceController extends Controller
 {
@@ -15,46 +15,59 @@ class DepartmentClearanceController extends Controller
     ) {}
 
     /**
-     * Process an officer's review decision (Approve or Reject).
-     * 
-     * POST /api/staff/clearances/{checkpoint}/review
+     * Show all pending clearance requests for the logged-in officer's department.
      */
-    public function review(Request $request, DepartmentClearance $checkpoint): JsonResponse
+    public function index(Request $request)
     {
-        // 1. Validate the incoming request payload
+        $officer = $request->user();
+        $departmentId = $officer->departmentOfficer?->department_id;
+
+        if (!$departmentId) {
+            return redirect()->back()->with('error', 'No department assigned to your account. Contact the administrator.');
+        }
+
+        $pendingClearances = DepartmentClearance::with(['application.student', 'department'])
+            ->where('department_id', $departmentId)
+            ->where('status', DepartmentClearanceStatus::Pending)
+            ->orderBy('created_at', 'asc')
+            ->paginate(15);
+
+        return view('dashboards.department', compact('pendingClearances', 'departmentId'));
+    }
+
+    /**
+     * Process an officer's approve or reject decision.
+     */
+    public function review(Request $request, DepartmentClearance $checkpoint)
+    {
         $validated = $request->validate([
-            'action' => 'required|in:approve,reject',
+            'action'  => 'required|in:approve,reject',
             'remarks' => 'nullable|string|max:500',
         ]);
 
-        try {
-            // 2. Fetch the authenticated officer user from the request context
-            $officer = $request->user();
+        $officer = $request->user();
 
-            // 3. Hand off execution to your new ClearanceService method
-            $updatedCheckpoint = $this->clearanceService->reviewDepartmentCheckpoint(
-                $checkpoint,
-                $validated['action'],
-                $officer,
-                $validated['remarks'] ?? null
-            );
-
-            return response()->json([
-                'success' => true,
-                'message' => "Department checkpoint successfully " . $validated['action'] . "d.",
-                'data' => [
-                    'checkpoint_id' => $updatedCheckpoint->id,
-                    'status' => $updatedCheckpoint->status,
-                    'remarks' => $updatedCheckpoint->remarks,
-                ]
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while processing the review.',
-                'error' => $e->getMessage()
-            ], 500);
+        $departmentId = $officer->departmentOfficer?->department_id;
+        if ($departmentId !== $checkpoint->department_id) {
+            abort(403, 'You are not authorized to review this clearance.');
         }
+
+        $status = $validated['action'] === 'approve'
+            ? DepartmentClearanceStatus::Approved
+            : DepartmentClearanceStatus::Rejected;
+
+        $checkpoint->update([
+            'status'      => $status,
+            'reviewed_by' => $officer->id,
+            'remarks'     => $validated['remarks'],
+            'reviewed_at' => now(),
+        ]);
+
+        $this->clearanceService->refreshApplicationStatus(
+            $checkpoint->application
+        );
+
+        return redirect()->route('department.dashboard')
+            ->with('success', 'Clearance ' . $validated['action'] . 'd successfully.');
     }
 }

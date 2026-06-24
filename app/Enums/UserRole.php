@@ -12,15 +12,10 @@ enum UserRole: string
     public function label(): string
     {
         return match($this) {
-            self::Student   => 'Student',
-            self::Officer   => 'Department Officer',
-            self::Registrar => 'Academic Registrar',
-            self::Admin     => 'System Administrator',
+            UserRole::Student   => 'Student',
+            UserRole::Officer   => 'Department Officer',
+            UserRole::Registrar => 'Registrar',
+            UserRole::Admin     => 'Administrator',
         };
-    }
-
-    public function canApprove(): bool
-    {
-        return in_array($this, [self::Officer, self::Registrar, self::Admin]);
     }
 }
