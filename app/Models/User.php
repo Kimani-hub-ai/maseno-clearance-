@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,13 +28,16 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'role' => UserRole::class,
-            'is_active' => 'boolean',
+            'password'          => 'hashed',
+            'role'              => UserRole::class,
+            'is_active'         => 'boolean',
         ];
     }
 
+    // -------------------------------------------------------------------------
     // Relationships
+    // -------------------------------------------------------------------------
+
     public function student()
     {
         return $this->hasOne(Student::class);
@@ -46,7 +48,12 @@ class User extends Authenticatable
         return $this->hasOne(DepartmentOfficer::class);
     }
 
-    public function notifications()
+    /**
+     * In-app notifications from the custom notifications table.
+     * Named appNotifications() to avoid conflict with Laravel's
+     * built-in Notifiable trait which also defines notifications().
+     */
+    public function appNotifications()
     {
         return $this->hasMany(Notification::class);
     }
@@ -56,37 +63,22 @@ class User extends Authenticatable
         return $this->hasMany(AuditLog::class);
     }
 
-    // Helper methods
-    public function isStudent(): bool
-    {
-        return $this->role === UserRole::Student;
-    }
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
 
-    public function isOfficer(): bool
-    {
-        return $this->role === UserRole::Officer;
-    }
-
-    public function isRegistrar(): bool
-    {
-        return $this->role === UserRole::Registrar;
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === UserRole::Admin;
-    }
-
-    /**
-     * Returns the route name for this user's dashboard based on role.
-     */
     public function dashboardRoute(): string
     {
-        return match ($this->role) {
+        return match($this->role) {
             UserRole::Student   => 'student.dashboard',
             UserRole::Officer   => 'department.dashboard',
             UserRole::Registrar => 'registrar.dashboard',
             UserRole::Admin     => 'admin.dashboard',
         };
     }
+
+    public function isStudent(): bool   { return $this->role === UserRole::Student; }
+    public function isOfficer(): bool   { return $this->role === UserRole::Officer; }
+    public function isRegistrar(): bool { return $this->role === UserRole::Registrar; }
+    public function isAdmin(): bool     { return $this->role === UserRole::Admin; }
 }
