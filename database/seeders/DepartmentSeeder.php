@@ -2,60 +2,31 @@
 
 namespace Database\Seeders;
 
+use App\Models\Department;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
 
 class DepartmentSeeder extends Seeder
 {
     public function run(): void
     {
         $departments = [
-            [
-                'name'        => 'Finance / Bursar',
-                'slug'        => 'finance',
-                'description' => 'Verifies all fee payments and financial obligations are cleared.',
-            ],
-            [
-                'name'        => 'Library',
-                'slug'        => 'library',
-                'description' => 'Confirms no outstanding books, fines, or borrowed items.',
-            ],
-            [
-                'name'        => 'Hostel / Dean of Students',
-                'slug'        => 'hostel',
-                'description' => 'Confirms room has been vacated and no property damage.',
-            ],
-            [
-                'name'        => 'ICT Department',
-                'slug'        => 'ict',
-                'description' => 'Confirms return of any ICT equipment issued to the student.',
-            ],
-            [
-                'name'        => 'Faculty / Department',
-                'slug'        => 'faculty',
-                'description' => 'Confirms all coursework, projects, and academic requirements are met.',
-            ],
-            [
-                'name'        => 'Games & Sports',
-                'slug'        => 'games-sports',
-                'description' => 'Confirms return of any sports equipment and club obligations.',
-            ],
-            [
-                'name'        => 'Academic Registrar',
-                'slug'        => 'registrar',
-                'description' => 'Final validation of eligibility and overall clearance approval.',
-            ],
+            ['name' => 'Library',              'slug' => 'library',    'description' => 'Books, fines, and library card clearance'],
+            ['name' => 'Finance / Bursar',      'slug' => 'finance',    'description' => 'Fee balance and financial obligations'],
+            ['name' => 'Hostel / Dean of Students', 'slug' => 'hostel', 'description' => 'Room keys, equipment, and accommodation clearance'],
+            ['name' => 'ICT Department',        'slug' => 'ict',        'description' => 'IT equipment and account deactivation'],
+            ['name' => 'Faculty / Department',  'slug' => 'faculty',    'description' => 'Academic department clearance'],
+            ['name' => 'Games & Sports',        'slug' => 'sports',     'description' => 'Sports equipment and club obligations'],
+            ['name' => 'Academic Registrar',    'slug' => 'registrar',  'description' => 'Final academic records clearance'],
         ];
 
         foreach ($departments as $dept) {
-            DB::table('departments')->updateOrInsert(
+            Department::firstOrCreate(
                 ['slug' => $dept['slug']],
-                array_merge($dept, [
-                    'is_active'  => true,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
-                ])
+                [
+                    'name'        => $dept['name'],
+                    'description' => $dept['description'],
+                    'is_active'   => true,
+                ]
             );
         }
     }
