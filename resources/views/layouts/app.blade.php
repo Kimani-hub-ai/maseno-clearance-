@@ -4,294 +4,315 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? config('app.name', 'Maseno Clearance') }}</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+    <title>{{ config('app.name', 'Maseno University Clearance') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        [x-cloak] { display: none !important; }
-        body { background: #f4f5f7; }
-        .page-header-bar {
-            background: #ffffff;
-            border-bottom: 2px solid #e2e8f0;
-            padding: 13px 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
+        :root {
+            --mu-blue:   #00AEEF;
+            --mu-navy:   #003B5C;
+            --mu-gold:   #F5A623;
+            --mu-light:  #E8F7FD;
+            --mu-white:  #FFFFFF;
+            --mu-gray:   #F3F4F6;
+            --mu-text:   #1F2937;
+            --mu-muted:  #6B7280;
+            --sidebar-w: 220px;
         }
-        .page-header-bar h2 {
-            font-size: 15px;
-            font-weight: 600;
-            color: #0f172a;
-            margin: 0;
-            line-height: 1.4;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--mu-gray); color: var(--mu-text); }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--mu-navy);
+            display: flex; flex-direction: column;
+            z-index: 100;
         }
-        .nav-section {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #475569;
-            padding: 12px 12px 4px;
+        .sidebar-brand {
+            padding: 20px 16px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .sidebar-nav::-webkit-scrollbar { width: 3px; }
-        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .sidebar-brand-name {
+            font-size: 14px; font-weight: 700; color: var(--mu-white);
+            letter-spacing: 0.3px;
+        }
+        .sidebar-brand-sub {
+            font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;
+        }
+        .sidebar-user {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--mu-blue);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: white;
+            margin-bottom: 8px;
+        }
+        .sidebar-username { font-size: 13px; font-weight: 600; color: white; }
+        .sidebar-role {
+            display: inline-block; font-size: 10px; font-weight: 600;
+            padding: 2px 8px; border-radius: 20px; margin-top: 3px;
+            background: var(--mu-blue); color: white; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .sidebar-nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+        .sidebar-section { padding: 8px 16px 4px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 16px; font-size: 13px; color: rgba(255,255,255,0.7);
+            text-decoration: none; transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-link:hover { background: rgba(255,255,255,0.07); color: white; }
+        .sidebar-link.active { background: rgba(0,174,239,0.15); color: var(--mu-blue); border-left-color: var(--mu-blue); }
+        .sidebar-footer {
+            padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 12px; color: rgba(255,255,255,0.4);
+        }
+
+        /* ── Main ── */
+        .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+        .topbar {
+            background: white; border-bottom: 1px solid #E5E7EB;
+            padding: 0 28px; height: 56px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-title { font-size: 16px; font-weight: 600; color: var(--mu-navy); }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .notif-btn {
+            position: relative; background: none; border: none; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--mu-muted); transition: background 0.15s;
+        }
+        .notif-btn:hover { background: var(--mu-gray); }
+        .notif-badge {
+            position: absolute; top: 4px; right: 4px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #EF4444; color: white; font-size: 9px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .notif-panel {
+            display: none; position: absolute; top: 48px; right: 0;
+            width: 300px; background: white; border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #E5E7EB;
+            z-index: 200; overflow: hidden;
+        }
+        .notif-panel.open { display: block; }
+        .notif-header { padding: 12px 16px; border-bottom: 1px solid #F3F4F6; display: flex; align-items: center; justify-content: space-between; }
+        .notif-header span { font-size: 13px; font-weight: 600; color: var(--mu-navy); }
+        .notif-unread { font-size: 11px; color: var(--mu-blue); font-weight: 600; }
+        .notif-item { padding: 12px 16px; border-bottom: 1px solid #F9FAFB; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item-title { font-size: 13px; font-weight: 600; color: var(--mu-text); }
+        .notif-item-body { font-size: 12px; color: var(--mu-muted); margin-top: 2px; line-height: 1.4; }
+        .notif-item-time { font-size: 11px; color: #9CA3AF; margin-top: 4px; }
+        .notif-item.unread { background: #F0F9FF; }
+        .notif-empty { padding: 24px; text-align: center; color: var(--mu-muted); font-size: 13px; }
+        .page-content { padding: 28px; flex: 1; }
+
+        /* ── Cards & components ── */
+        .card { background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+        .card-p { padding: 24px; }
+        .page-title { font-size: 20px; font-weight: 700; color: var(--mu-navy); margin-bottom: 20px; }
+        .section-title { font-size: 15px; font-weight: 600; color: var(--mu-navy); margin-bottom: 14px; }
+        .stat-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 24px; }
+        .stat-card {
+            background: white; border-radius: 10px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            border-left: 4px solid var(--mu-blue);
+            text-decoration: none;
+        }
+        .stat-card .lbl { font-size: 12px; color: var(--mu-muted); margin-bottom: 6px; }
+        .stat-card .val { font-size: 28px; font-weight: 700; color: var(--mu-navy); }
+        .badge {
+            display: inline-flex; align-items: center;
+            padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+        }
+        .badge-cleared, .badge-approved { background: #D1FAE5; color: #065F46; }
+        .badge-in_progress, .badge-submitted, .badge-pending { background: #FEF3C7; color: #92400E; }
+        .badge-rejected { background: #FEE2E2; color: #991B1B; }
+        .badge-draft { background: #F3F4F6; color: #374151; }
+        .alert-success { background: #D1FAE5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .alert-error { background: #FEE2E2; border: 1px solid #FECACA; color: #991B1B; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 20px; background: var(--mu-blue); color: white;
+            border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: background 0.15s;
+        }
+        .btn-primary:hover { background: #0099D6; }
+        .btn-navy {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 20px; background: var(--mu-navy); color: white;
+            border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: background 0.15s;
+        }
+        .btn-navy:hover { background: #002a42; }
+        .btn-secondary {
+            padding: 8px 16px; background: var(--mu-gray); color: var(--mu-text);
+            border: 1px solid #D1D5DB; border-radius: 8px; font-size: 13px;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-secondary:hover { background: #E5E7EB; }
+        .form-input {
+            width: 100%; padding: 9px 12px; border: 1px solid #D1D5DB;
+            border-radius: 8px; font-size: 14px; color: var(--mu-text);
+            transition: border-color 0.15s;
+        }
+        .form-input:focus { outline: none; border-color: var(--mu-blue); box-shadow: 0 0 0 3px rgba(0,174,239,0.1); }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--mu-text); margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; color: var(--mu-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #E5E7EB; }
+        tbody td { padding: 12px 14px; border-bottom: 1px solid #F3F4F6; color: var(--mu-text); }
+        tbody tr:hover td { background: #F9FAFB; }
+        .progress-bar { width: 100%; height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--mu-blue); border-radius: 3px; transition: width 0.3s; }
+        .dept-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+        .dept-row:last-child { border-bottom: none; }
+        .dept-name { font-size: 14px; font-weight: 500; color: var(--mu-text); display: flex; align-items: center; gap: 8px; }
+        .dept-status { font-size: 12px; font-weight: 600; }
+        .dept-approved { color: #059669; }
+        .dept-pending { color: #D97706; }
+        .dept-rejected { color: #DC2626; }
+        .cert-box {
+            background: linear-gradient(135deg, #F0F9FF 0%, #E8F7FD 100%);
+            border: 2px solid var(--mu-blue); border-radius: 12px;
+            padding: 24px; text-align: center;
+        }
+        .cert-box h3 { font-size: 18px; font-weight: 700; color: var(--mu-navy); margin-bottom: 6px; }
+        .cert-box p { font-size: 13px; color: var(--mu-muted); margin-bottom: 16px; }
+        .cert-meta { font-size: 12px; color: var(--mu-muted); margin-top: 10px; }
+        .hover-row { transition: background 0.1s; }
+        .hover-row:hover { background: var(--mu-gray); }
     </style>
 </head>
-<body class="font-sans antialiased" x-data="{ sidebarOpen: false }">
+<body>
 
-<div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
-     class="fixed inset-0 z-20 bg-black bg-opacity-60 lg:hidden"
-     x-transition:enter="transition-opacity ease-linear duration-200"
-     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-     x-transition:leave="transition-opacity ease-linear duration-200"
-     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-</div>
-
-<div class="flex h-screen overflow-hidden">
-
-    {{-- SIDEBAR --}}
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-           class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 flex-shrink-0
-                  transform transition-transform duration-200 ease-in-out
-                  lg:static lg:translate-x-0"
-           style="background:#0f172a;">
-
-        {{-- Brand --}}
-        <div class="flex items-center gap-3 px-5 py-4 flex-shrink-0"
-             style="border-bottom:1px solid rgba(255,255,255,0.07);">
-            <div class="flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0"
-                 style="background:#2563eb;">
-                <i class="ti ti-certificate" style="color:#fff;font-size:18px;"></i>
-            </div>
-            <div>
-                <p class="text-sm font-semibold leading-tight" style="color:#f1f5f9;">Maseno University</p>
-                <p class="text-xs" style="color:#64748b;">Clearance System</p>
-            </div>
-        </div>
-
-        {{-- User block --}}
-        <div class="flex items-center gap-3 px-5 py-3 flex-shrink-0"
-             style="border-bottom:1px solid rgba(255,255,255,0.07);">
-            <div class="flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 text-xs font-semibold"
-                 style="background:#1d4ed8;color:#bfdbfe;">
-                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-            </div>
-            <div class="min-w-0">
-                <p class="text-sm font-medium truncate" style="color:#e2e8f0;">{{ auth()->user()->name }}</p>
-                <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-xs font-medium"
-                      style="background:#1e3a5f;color:#93c5fd;">
-                    {{ auth()->user()->role->label() }}
-                </span>
-            </div>
-        </div>
-
-        {{-- Nav --}}
-        <nav class="sidebar-nav flex-1 overflow-y-auto px-3 py-3">
-            @php $role = auth()->user()->role->value; @endphp
-
-            @if($role === 'student')
-                <div class="nav-section">Main</div>
-                <x-sidebar-link route="student.dashboard"        icon="layout-dashboard" label="Dashboard" />
-                <x-sidebar-link route="student.clearance.index"  icon="file-text"        label="My Application" />
-                <x-sidebar-link route="student.clearance.create" icon="circle-plus"      label="New Application" />
-                <div class="nav-section">Account</div>
-                <x-sidebar-link route="profile.edit"             icon="user-circle"      label="My Profile" />
-            @endif
-
-            @if($role === 'officer')
-                <div class="nav-section">Main</div>
-                <x-sidebar-link route="department.dashboard" icon="layout-dashboard" label="Dashboard" />
-                <x-sidebar-link route="department.dashboard" icon="clipboard-check"  label="Pending Reviews" />
-                <div class="nav-section">Account</div>
-                <x-sidebar-link route="profile.edit"         icon="user-circle"      label="My Profile" />
-            @endif
-
-            @if($role === 'registrar')
-                <div class="nav-section">Main</div>
-                <x-sidebar-link route="registrar.dashboard" icon="layout-dashboard" label="Dashboard" />
-                <x-sidebar-link route="registrar.dashboard" icon="files"            label="All Applications" />
-                <x-sidebar-link route="registrar.dashboard" icon="certificate"      label="Certificates" />
-                <div class="nav-section">Account</div>
-                <x-sidebar-link route="profile.edit"        icon="user-circle"      label="My Profile" />
-            @endif
-
-            @if($role === 'admin')
-                <div class="nav-section">Main</div>
-                <x-sidebar-link route="admin.dashboard" icon="layout-dashboard" label="Dashboard" />
-                <x-sidebar-link route="admin.dashboard" icon="users"            label="Manage Officers" />
-                <x-sidebar-link route="admin.dashboard" icon="building"         label="Departments" />
-                <div class="nav-section">Account</div>
-                <x-sidebar-link route="profile.edit"    icon="user-circle"      label="My Profile" />
-            @endif
-        </nav>
-
-        {{-- Sign out --}}
-        <div class="px-3 py-3 flex-shrink-0" style="border-top:1px solid rgba(255,255,255,0.07);">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150"
-                        style="color:#64748b;background:transparent;"
-                        onmouseover="this.style.background='rgba(239,68,68,0.1)';this.style.color='#fca5a5';"
-                        onmouseout="this.style.background='transparent';this.style.color='#64748b';">
-                    <i class="ti ti-logout flex-shrink-0" style="font-size:17px;width:18px;"></i>
-                    Sign Out
-                </button>
-            </form>
-        </div>
-    </aside>
-
-    {{-- MAIN AREA --}}
-    <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-
-        {{-- TOP BAR --}}
-        <header class="flex items-center justify-between flex-shrink-0 px-4 sm:px-6 h-14"
-                style="background:#ffffff;border-bottom:1px solid #e2e8f0;">
-
-            <button @click="sidebarOpen = !sidebarOpen"
-                    class="lg:hidden p-2 rounded-lg transition-colors"
-                    style="color:#64748b;"
-                    onmouseover="this.style.background='#f4f5f7';"
-                    onmouseout="this.style.background='transparent';">
-                <i class="ti ti-menu-2" style="font-size:20px;"></i>
-            </button>
-
-            {{-- Breadcrumb --}}
-            <div class="hidden lg:flex items-center gap-2 text-xs" style="color:#94a3b8;">
-                <i class="ti ti-home" style="font-size:13px;"></i>
-                <span style="color:#cbd5e1;">/</span>
-                <span style="color:#64748b;">
-                    @php
-                        $routeName = request()->route()?->getName() ?? '';
-                        echo match(true) {
-                            str_contains($routeName, 'clearance.create') => 'New Application',
-                            str_contains($routeName, 'clearance.index')  => 'My Application',
-                            str_contains($routeName, 'dashboard')        => 'Dashboard',
-                            str_contains($routeName, 'profile')          => 'Profile',
-                            str_contains($routeName, 'officers')         => 'Manage Officers',
-                            str_contains($routeName, 'applications')     => 'Applications',
-                            default                                      => 'Overview',
-                        };
-                    @endphp
-                </span>
-            </div>
-
-            {{-- Right side --}}
-            <div class="flex items-center gap-2 ml-auto">
-
-                @php
-                    $unreadCount = auth()->user()->appNotifications()->where('is_read', false)->count();
-                @endphp
-
-                {{-- Bell --}}
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open"
-                            class="relative flex items-center justify-center w-9 h-9 rounded-lg transition-colors"
-                            style="background:#f4f5f7;"
-                            onmouseover="this.style.background='#e9ebee';"
-                            onmouseout="this.style.background='#f4f5f7';"
-                            aria-label="Notifications">
-                        <i class="ti ti-bell" style="font-size:18px;color:#64748b;"></i>
-                        @if($unreadCount > 0)
-                            <span class="absolute top-1.5 right-1.5 flex items-center justify-center
-                                         w-4 h-4 rounded-full font-bold"
-                                  style="background:#ef4444;color:#fff;font-size:9px;
-                                         border:1.5px solid #fff;">
-                                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                            </span>
-                        @endif
-                    </button>
-
-                    <div x-show="open" x-cloak @click.outside="open = false"
-                         class="absolute right-0 mt-2 w-80 rounded-xl overflow-hidden"
-                         style="background:#fff;border:0.5px solid #e2e8f0;
-                                box-shadow:0 8px 24px rgba(0,0,0,0.08);z-index:50;"
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 -translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0">
-
-                        <div class="flex items-center justify-between px-4 py-3"
-                             style="border-bottom:1px solid #f1f5f9;">
-                            <p class="text-sm font-semibold" style="color:#0f172a;">Notifications</p>
-                            @if($unreadCount > 0)
-                                <span class="text-xs font-medium" style="color:#2563eb;">{{ $unreadCount }} unread</span>
-                            @endif
-                        </div>
-
-                        <div class="overflow-y-auto" style="max-height:300px;">
-                            @forelse(auth()->user()->appNotifications()->latest()->take(8)->get() as $notif)
-                                <div class="px-4 py-3 transition-colors"
-                                     style="{{ !$notif->is_read ? 'background:#eff6ff;' : 'background:#fff;' }}
-                                            border-bottom:1px solid #f8fafc;"
-                                     onmouseover="this.style.background='#f8fafc';"
-                                     onmouseout="this.style.background='{{ !$notif->is_read ? '#eff6ff' : '#fff' }}';">
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0 mt-0.5"
-                                             style="background:#dbeafe;">
-                                            <i class="ti ti-bell" style="font-size:13px;color:#2563eb;"></i>
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-xs font-semibold" style="color:#0f172a;">{{ $notif->title }}</p>
-                                            <p class="text-xs mt-0.5 leading-relaxed" style="color:#64748b;">
-                                                {{ Str::limit($notif->message, 80) }}
-                                            </p>
-                                            <p class="text-xs mt-1" style="color:#94a3b8;">{{ $notif->created_at->diffForHumans() }}</p>
-                                        </div>
-                                        @if(!$notif->is_read)
-                                            <div class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
-                                                 style="background:#2563eb;"></div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="px-4 py-10 text-center">
-                                    <i class="ti ti-bell-off" style="font-size:32px;color:#cbd5e1;display:block;margin-bottom:8px;"></i>
-                                    <p class="text-sm" style="color:#94a3b8;">No notifications yet</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-
-                {{-- User pill --}}
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer"
-                     style="background:#f4f5f7;border:0.5px solid #e2e8f0;">
-                    <div class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold flex-shrink-0"
-                         style="background:#2563eb;color:#fff;">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                    </div>
-                    <span class="text-xs font-medium hidden md:block" style="color:#374151;">
-                        {{ auth()->user()->name }}
-                    </span>
-                    <i class="ti ti-chevron-down hidden md:block" style="font-size:12px;color:#94a3b8;"></i>
-                </div>
-            </div>
-        </header>
-
-        {{-- PAGE HEADER — white strip with blue left border, always visible --}}
-        @isset($header)
-            <div class="page-header-bar">
-                <div class="w-1 h-6 rounded-full flex-shrink-0" style="background:#2563eb;"></div>
-                <h2>{{ $header }}</h2>
-            </div>
-        @endisset
-
-        {{-- PAGE CONTENT --}}
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6" style="background:#f4f5f7;">
-            {{ $slot }}
-        </main>
-
-        {{-- FOOTER --}}
-        <footer class="flex-shrink-0 px-6 py-2.5 text-xs text-center"
-                style="background:#fff;border-top:1px solid #e2e8f0;color:#94a3b8;">
-            © {{ date('Y') }} Maseno University — Clearance Management System
-        </footer>
+{{-- Sidebar --}}
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="sidebar-brand-name">Maseno University</div>
+        <div class="sidebar-brand-sub">Clearance System</div>
     </div>
+
+    @auth
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+        <div class="sidebar-username">{{ Str::limit(auth()->user()->name, 20) }}</div>
+        <span class="sidebar-role">{{ ucfirst(auth()->user()->role->value) }}</span>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-section">Main</div>
+
+        @if(auth()->user()->isStudent())
+            <a href="{{ route('student.dashboard') }}" class="sidebar-link {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
+                ⊞ Dashboard
+            </a>
+            <a href="{{ route('student.clearance.index') }}" class="sidebar-link {{ request()->routeIs('student.clearance.*') ? 'active' : '' }}">
+                ☑ My Application
+            </a>
+            <a href="{{ route('student.clearance.create') }}" class="sidebar-link">
+                ＋ New Application
+            </a>
+        @elseif(auth()->user()->isOfficer())
+            <a href="{{ route('department.dashboard') }}" class="sidebar-link {{ request()->routeIs('department.*') ? 'active' : '' }}">
+                ⊞ Dashboard
+            </a>
+            <a href="{{ route('department.dashboard') }}" class="sidebar-link">
+                ⏳ Pending Reviews
+            </a>
+        @elseif(auth()->user()->isRegistrar())
+            <a href="{{ route('registrar.dashboard') }}" class="sidebar-link {{ request()->routeIs('registrar.*') ? 'active' : '' }}">
+                ⊞ Dashboard
+            </a>
+            <a href="{{ route('registrar.dashboard') }}" class="sidebar-link">
+                ☰ All Applications
+            </a>
+        @elseif(auth()->user()->isAdmin())
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                ⊞ Dashboard
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
+                ☺ Manage Officers
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
+                ☰ Departments
+            </a>
+        @endif
+
+        <div class="sidebar-section">Account</div>
+        <a href="{{ route('profile.edit') }}" class="sidebar-link">☺ My Profile</a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="sidebar-link" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                ⏻ Sign Out
+            </button>
+        </form>
+    </nav>
+    @endauth
+
+    <div class="sidebar-footer">© {{ date('Y') }} Maseno University</div>
+</aside>
+
+{{-- Main --}}
+<div class="main-wrap">
+    <header class="topbar">
+        <span class="topbar-title">
+            @isset($header){{ $header }}@else Maseno University Clearance System @endisset
+        </span>
+        <div class="topbar-right">
+            @auth
+            @php
+                $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                    ->where('is_read', false)
+                    ->count();
+            @endphp
+            <div class="notif-wrapper" style="position:relative;">
+                <button class="notif-btn" onclick="document.getElementById('notifPanel').classList.toggle('open')">
+                    🔔
+                    @if($unreadCount > 0)
+                        <span class="notif-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                    @endif
+                </button>
+                <div class="notif-panel" id="notifPanel">
+                    <div class="notif-header">
+                        <span>Notifications</span>
+                        @if($unreadCount > 0)<span class="notif-unread">{{ $unreadCount }} unread</span>@endif
+                    </div>
+                    @php $notifications = \App\Models\Notification::where('user_id', auth()->id())->latest()->take(8)->get(); @endphp
+                    @forelse($notifications as $n)
+                        <div class="notif-item {{ !$n->is_read ? 'unread' : '' }}">
+                            <div class="notif-item-title">{{ $n->title }}</div>
+                            <div class="notif-item-body">{{ Str::limit($n->message, 80) }}</div>
+                            <div class="notif-item-time">{{ $n->created_at->diffForHumans() }}</div>
+                        </div>
+                    @empty
+                        <div class="notif-empty">No notifications yet.</div>
+                    @endforelse
+                </div>
+            </div>
+            @endauth
+        </div>
+    </header>
+
+    <main class="page-content">
+        {{ $slot }}
+    </main>
 </div>
 
+<script>
+document.addEventListener('click', function(e) {
+    const panel = document.getElementById('notifPanel');
+    const wrapper = document.querySelector('.notif-wrapper');
+    if (panel && wrapper && !wrapper.contains(e.target)) {
+        panel.classList.remove('open');
+    }
+});
+</script>
 </body>
 </html>

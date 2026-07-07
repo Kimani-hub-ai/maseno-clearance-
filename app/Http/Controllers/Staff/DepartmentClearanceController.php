@@ -52,19 +52,11 @@ class DepartmentClearanceController extends Controller
             abort(403, 'You are not authorized to review this clearance.');
         }
 
-        $status = $validated['action'] === 'approve'
-            ? DepartmentClearanceStatus::Approved
-            : DepartmentClearanceStatus::Rejected;
-
-        $checkpoint->update([
-            'status'      => $status,
-            'reviewed_by' => $officer->id,
-            'remarks'     => $validated['remarks'],
-            'reviewed_at' => now(),
-        ]);
-
-        $this->clearanceService->refreshApplicationStatus(
-            $checkpoint->application
+        $this->clearanceService->reviewDepartmentCheckpoint(
+            $checkpoint,
+            $validated['action'],
+            $officer,
+            $validated['remarks'] ?? null
         );
 
         return redirect()->route('department.dashboard')

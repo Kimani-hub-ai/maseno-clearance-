@@ -196,16 +196,18 @@
                             Certificate No: <strong>{{ $application->certificate->certificate_number }}</strong><br>
                             Issued: {{ $application->certificate->issued_at->format('d M Y') }}
                         </p>
-                        @if ($application->certificate->pdf_path)
-                            <a href="{{ route('student.certificate.download', $application->certificate) }}"
-                               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition">
-                                ⬇ Download Certificate
-                            </a>
-                        @else
-                            <p class="text-sm text-green-600">
-                                Your certificate is being generated. Please check back in a few minutes.
-                            </p>
-                        @endif
+                       @if ($application->certificate && $application->certificate->pdf_path)
+                             <a href="{{ route('student.certificate.download', $application->certificate) }}"
+                                 style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#1F4E5C;color:white;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">
+                                     ⬇ Download Clearance Certificate
+                               </a>
+                               <p style="margin-top:8px;font-size:12px;color:#6b7280;">
+                                     Certificate No: {{ $application->certificate->certificate_number }} &nbsp;|&nbsp;
+                                     Issued: {{ $application->certificate->issued_at->format('d M Y') }}
+                               </p>
+                       @else
+                         <p class="text-sm text-gray-500">Your certificate is being generated. Please check back in a few minutes.</p>
+                       @endif
                     </div>
                 @endif
 

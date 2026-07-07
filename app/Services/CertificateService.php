@@ -161,4 +161,29 @@ class CertificateService
 
         return $path;
     }
+
+    /**
+     * Registrar manually issues a certificate for a fully-cleared application.
+     * Used as an override/fallback from the registrar dashboard.
+     */
+    public function issueCertificate(ClearanceApplication $application): ClearanceCertificate
+    {
+    // Force status to cleared so certificate generation proceeds
+    if ($application->status !== \App\Enums\ClearanceStatus::Cleared) {
+        $application->update([
+            'status'       => \App\Enums\ClearanceStatus::Cleared,
+            'completed_at' => now(),
+        ]);
+    }
+    $certificate = $this->generateForApplication($application);
+
+    if (property_exists($this, 'notificationService') && $this->notificationService) {
+        $this->notificationService->notifyCertificateReady(
+            $application->student->user
+        );
+    }
+
+    return $certificate;
+}
+
 }

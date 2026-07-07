@@ -59,24 +59,26 @@
                                             {{ $student->programme ?? 'N/A' }}
                                         </td>
                                         <td class="px-6 py-4 text-sm">
-                                            <form method="POST"
-                                                  action="{{ route('department.clearance.review', $checkpoint->id) }}"
-                                                  class="flex items-center justify-center space-x-2">
-                                                @csrf
-                                                <input type="text"
-                                                       name="remarks"
-                                                       placeholder="Optional remarks..."
-                                                       class="border-gray-300 rounded-md text-xs py-1 px-2 w-48">
-                                                <button type="submit" name="action" value="approve"
-                                                        class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold">
-                                                    Approve
-                                                </button>
-                                                <button type="submit" name="action" value="reject"
-                                                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold">
-                                                    Reject
-                                                </button>
-                                            </form>
-                                        </td>
+                                             <form method="POST"
+                                             action="{{ route('department.clearance.review', $checkpoint->id) }}"
+                                             class="flex flex-col gap-2">
+                                          @csrf
+                                              <input type="text"
+                                                 name="remarks"
+                                                 placeholder="Optional remarks..."
+                                                 class="border-gray-300 rounded-md text-xs py-1 px-2 w-full">
+                                             <div class="flex gap-2">
+                                             <button type="submit" name="action" value="approve"
+                                                 style="flex:1;padding:4px 12px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">
+                                                 Approve
+                                             </button>
+                                             <button type="submit" name="action" value="reject"
+                                                 style="flex:1;padding:4px 12px;background:#dc2626;color:white;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">
+                                                 Reject
+                                             </button>
+                                             </div>
+                                             </form>
+                                          </td>
                                     </tr>
                                 @endforeach
                             </tbody>

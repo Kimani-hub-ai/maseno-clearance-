@@ -163,40 +163,41 @@ class ClearanceService
 
     /**
      * Manually issue a certificate (called by Registrar for edge cases).
-     */
+     * Delegates to CertificateService so the full PDF + QR code is generated,
+     * not just the database record.
+    */
     public function issueCertificate(ClearanceApplication $application): ClearanceCertificate
     {
-        $student           = $application->student;
-        $certificateNumber = $this->generateCertificateNumber();
-        $verificationToken = Str::uuid()->toString();
+         // Force status to cleared so CertificateService proceeds
+         if ($application->status->value !== 'cleared') {
+             $application->update([
+                 'status'       => ClearanceStatus::Cleared->value,
+                 'completed_at' => $application->completed_at ?? now(),
+           ]);
+        }
 
-        $certificate = ClearanceCertificate::create([
-            'application_id'     => $application->id,
-            'certificate_number' => $certificateNumber,
-            'verification_token' => $verificationToken,
-            'issued_at'          => now(),
-        ]);
+        $certificate = app(\App\Services\CertificateService::class)
+             ->generateForApplication($application->fresh());
 
         $this->notify(
-            $student->user,
-            'certificate_issued',
-            'Clearance Certificate Ready',
-            "Congratulations! Your clearance certificate ({$certificateNumber}) has been issued. " .
-            'You can now download it from your dashboard.'
+             $application->student->user,
+             'certificate_issued',
+             'Clearance Certificate Ready',
+             "Congratulations! Your clearance certificate ({$certificate->certificate_number}) has been issued. " .
+             'You can now download it from your dashboard.'
         );
 
         $this->audit(
-            $student->user,
-            'certificate_issued',
-            ClearanceCertificate::class,
-            $certificate->id,
-            null,
-            ['certificate_number' => $certificateNumber]
+             $application->student->user,
+             'certificate_issued',
+             ClearanceCertificate::class,
+             $certificate->id,
+             null,
+             ['certificate_number' => $certificate->certificate_number]
         );
 
         return $certificate;
     }
-
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
@@ -231,10 +232,10 @@ class ClearanceService
             );
 
         } elseif ($approvedCount === $total && $total > 0) {
-            $application->update([
-                'status'       => ClearanceStatus::Approved->value,
-                'completed_at' => now(),
-            ]);
+             $application->update([
+                 'status'       => ClearanceStatus::Cleared->value,
+                 'completed_at' => now(),
+             ]);
 
             $this->issueCertificate($application);
         }
