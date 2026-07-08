@@ -95,16 +95,30 @@
             background: #EF4444; color: white; font-size: 9px; font-weight: 700;
             display: flex; align-items: center; justify-content: center;
         }
+
+        /* ── Notification panel — single clean definition ── */
         .notif-panel {
-            display: none; position: absolute; top: 48px; right: 0;
-            width: 300px; background: white; border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #E5E7EB;
-            z-index: 200; overflow: hidden;
+            display: none;
+            position: absolute; top: 48px; right: 0;
+            width: 320px;
+            background: white; border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            border: 1px solid #E5E7EB;
+            z-index: 200;
+            max-height: 420px;
+            flex-direction: column;
         }
-        .notif-panel.open { display: block; }
-        .notif-header { padding: 12px 16px; border-bottom: 1px solid #F3F4F6; display: flex; align-items: center; justify-content: space-between; }
+        .notif-panel.open { display: flex; }
+
+        .notif-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #F3F4F6;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
         .notif-header span { font-size: 13px; font-weight: 600; color: var(--mu-navy); }
         .notif-unread { font-size: 11px; color: var(--mu-blue); font-weight: 600; }
+        .notif-body { flex: 1; overflow-y: auto; }
         .notif-item { padding: 12px 16px; border-bottom: 1px solid #F9FAFB; }
         .notif-item:last-child { border-bottom: none; }
         .notif-item-title { font-size: 13px; font-weight: 600; color: var(--mu-text); }
@@ -112,6 +126,7 @@
         .notif-item-time { font-size: 11px; color: #9CA3AF; margin-top: 4px; }
         .notif-item.unread { background: #F0F9FF; }
         .notif-empty { padding: 24px; text-align: center; color: var(--mu-muted); font-size: 13px; }
+
         .page-content { padding: 28px; flex: 1; }
 
         /* ── Cards & components ── */
@@ -213,18 +228,15 @@
             <a href="{{ route('student.dashboard') }}" class="sidebar-link {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
                 ⊞ Dashboard
             </a>
-            <a href="{{ route('student.clearance.index') }}" class="sidebar-link {{ request()->routeIs('student.clearance.*') ? 'active' : '' }}">
+            <a href="{{ route('student.clearance.index') }}" class="sidebar-link {{ request()->routeIs('student.clearance.index') ? 'active' : '' }}">
                 ☑ My Application
             </a>
-            <a href="{{ route('student.clearance.create') }}" class="sidebar-link">
+            <a href="{{ route('student.clearance.create') }}" class="sidebar-link {{ request()->routeIs('student.clearance.create') ? 'active' : '' }}">
                 ＋ New Application
             </a>
         @elseif(auth()->user()->isOfficer())
             <a href="{{ route('department.dashboard') }}" class="sidebar-link {{ request()->routeIs('department.*') ? 'active' : '' }}">
                 ⊞ Dashboard
-            </a>
-            <a href="{{ route('department.dashboard') }}" class="sidebar-link">
-                ⏳ Pending Reviews
             </a>
         @elseif(auth()->user()->isRegistrar())
             <a href="{{ route('registrar.dashboard') }}" class="sidebar-link {{ request()->routeIs('registrar.*') ? 'active' : '' }}">
@@ -240,13 +252,12 @@
             <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
                 ☺ Manage Officers
             </a>
-            <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
-                ☰ Departments
-            </a>
         @endif
 
         <div class="sidebar-section">Account</div>
-        <a href="{{ route('profile.edit') }}" class="sidebar-link">☺ My Profile</a>
+        <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            ☺ My Profile
+        </a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="sidebar-link" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
@@ -273,7 +284,7 @@
                     ->count();
             @endphp
             <div class="notif-wrapper" style="position:relative;">
-                <button class="notif-btn" onclick="document.getElementById('notifPanel').classList.toggle('open')">
+                <button class="notif-btn" id="notifBtn">
                     🔔
                     @if($unreadCount > 0)
                         <span class="notif-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
@@ -282,18 +293,25 @@
                 <div class="notif-panel" id="notifPanel">
                     <div class="notif-header">
                         <span>Notifications</span>
-                        @if($unreadCount > 0)<span class="notif-unread">{{ $unreadCount }} unread</span>@endif
+                        @if($unreadCount > 0)
+                            <span class="notif-unread">{{ $unreadCount }} unread</span>
+                        @endif
                     </div>
-                    @php $notifications = \App\Models\Notification::where('user_id', auth()->id())->latest()->take(8)->get(); @endphp
-                    @forelse($notifications as $n)
-                        <div class="notif-item {{ !$n->is_read ? 'unread' : '' }}">
-                            <div class="notif-item-title">{{ $n->title }}</div>
-                            <div class="notif-item-body">{{ Str::limit($n->message, 80) }}</div>
-                            <div class="notif-item-time">{{ $n->created_at->diffForHumans() }}</div>
-                        </div>
-                    @empty
-                        <div class="notif-empty">No notifications yet.</div>
-                    @endforelse
+                    <div class="notif-body">
+                        @php
+                            $notifications = \App\Models\Notification::where('user_id', auth()->id())
+                                ->latest()->take(20)->get();
+                        @endphp
+                        @forelse($notifications as $n)
+                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }}">
+                                <div class="notif-item-title">{{ $n->title }}</div>
+                                <div class="notif-item-body">{{ Str::limit($n->message, 80) }}</div>
+                                <div class="notif-item-time">{{ $n->created_at->diffForHumans() }}</div>
+                            </div>
+                        @empty
+                            <div class="notif-empty">No notifications yet.</div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
             @endauth
@@ -306,13 +324,30 @@
 </div>
 
 <script>
-document.addEventListener('click', function(e) {
-    const panel = document.getElementById('notifPanel');
-    const wrapper = document.querySelector('.notif-wrapper');
-    if (panel && wrapper && !wrapper.contains(e.target)) {
-        panel.classList.remove('open');
+    const notifBtn   = document.getElementById('notifBtn');
+    const notifPanel = document.getElementById('notifPanel');
+
+    // Toggle open/close on bell click
+    if (notifBtn && notifPanel) {
+        notifBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            notifPanel.classList.toggle('open');
+        });
     }
-});
+
+    // Close when clicking anywhere outside
+    document.addEventListener('click', function (e) {
+        if (notifPanel && !notifPanel.contains(e.target)) {
+            notifPanel.classList.remove('open');
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && notifPanel) {
+            notifPanel.classList.remove('open');
+        }
+    });
 </script>
 </body>
 </html>

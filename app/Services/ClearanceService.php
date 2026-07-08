@@ -21,10 +21,6 @@ class ClearanceService
     // Public API
     // -------------------------------------------------------------------------
 
-    /**
-     * Check whether a student already has an active (non-rejected) application
-     * for the given academic year.
-     */
     public function hasActiveApplication(Student $student, string $academicYear): bool
     {
         return $student->clearanceApplications()
@@ -33,27 +29,23 @@ class ClearanceService
             ->exists();
     }
 
-    /**
-     * Create a new clearance application for a student.
-     * Fans out one DepartmentClearance row per active department.
-     *
-     * FIX: Pass enum backing VALUES (raw strings) to ::create(), not enum
-     * objects. This prevents MariaDB from receiving a PHP object and also
-     * avoids "is not a valid backing value" on the return read.
-     */
-    public function createApplication(Student $student, string $academicYear): ClearanceApplication
-    {
-        return DB::transaction(function () use ($student, $academicYear) {
+    public function createApplication(
+        Student $student,
+        string $academicYear,
+        string $applicationType = 'graduation',
+        ?string $remarks = null
+    ): ClearanceApplication {
+        return DB::transaction(function () use ($student, $academicYear, $applicationType, $remarks) {
 
-            // 1. Create the master application
             $application = ClearanceApplication::create([
-                'student_id'    => $student->id,
-                'academic_year' => $academicYear,
-                'status'        => ClearanceStatus::Pending->value,
-                'submitted_at'  => now(),
+                'student_id'       => $student->id,
+                'academic_year'    => $academicYear,
+                'application_type' => $applicationType,
+                'status'           => ClearanceStatus::Pending->value,
+                'remarks'          => $remarks,
+                'submitted_at'     => now(),
             ]);
 
-            // 2. Fan out one checkpoint per active department
             $departments = Department::where('is_active', true)->get();
 
             foreach ($departments as $department) {
@@ -64,16 +56,14 @@ class ClearanceService
                 ]);
             }
 
-            // 3. In-app notification to student
             $this->notify(
                 $student->user,
                 'application_submitted',
-                'Clearance Application Submitted',
-                "Your clearance application for {$academicYear} has been submitted to " .
+                'Application Submitted',
+                "Your application for {$academicYear} has been submitted to " .
                 $departments->count() . ' department(s) for review.'
             );
 
-            // 4. Audit trail
             $this->audit(
                 $student->user,
                 'application_submitted',
@@ -88,12 +78,9 @@ class ClearanceService
     }
 
     /**
-     * Process a department officer's approve/reject decision.
-     *
-     * FIX: $checkpoint->status is cast to DepartmentClearanceStatus enum by
-     * the model. We must call ->value to get the raw string for DB writes.
-     * We also guard against rows that were inserted via DB::table() and come
-     * back as plain strings instead of enum objects.
+     * Department officer approves or rejects their checkpoint.
+     * When ALL departments approve → status becomes 'awaiting_registrar'
+     * Certificate is NOT issued here — registrar must sign off first.
      */
     public function reviewDepartmentCheckpoint(
         DepartmentClearance $checkpoint,
@@ -103,14 +90,11 @@ class ClearanceService
     ): void {
         DB::transaction(function () use ($checkpoint, $action, $reviewer, $remarks) {
 
-            // Safely read old status — handles both enum object and raw string
-            $oldStatus = $this->statusValue($checkpoint->status);
-
+            $oldStatus      = $this->statusValue($checkpoint->status);
             $newStatusValue = $action === 'approve'
                 ? DepartmentClearanceStatus::Approved->value
                 : DepartmentClearanceStatus::Rejected->value;
 
-            // 1. Update the checkpoint with raw string value
             $checkpoint->update([
                 'status'      => $newStatusValue,
                 'reviewed_by' => $reviewer->id,
@@ -118,7 +102,6 @@ class ClearanceService
                 'reviewed_at' => now(),
             ]);
 
-            // 2. Audit
             $this->audit(
                 $reviewer,
                 "department_{$action}d",
@@ -128,9 +111,6 @@ class ClearanceService
                 ['status' => $newStatusValue, 'remarks' => $remarks]
             );
 
-            // 3. Notify the student — use aliased relation to avoid
-            //    RelationNotFoundException (both 'application' and
-            //    'clearanceApplication' are defined on the model)
             $application = $checkpoint->clearanceApplication()
                 ->with('student.user')
                 ->first();
@@ -143,75 +123,136 @@ class ClearanceService
                     $student->user,
                     'department_approved',
                     "{$deptName} Cleared",
-                    "The {$deptName} department has approved your clearance application."
+                    "The {$deptName} department has approved your application."
                 );
             } else {
                 $this->notify(
                     $student->user,
                     'department_rejected',
                     "{$deptName} Rejected",
-                    "The {$deptName} department has rejected your clearance. " .
-                    'Reason: ' . ($remarks ?? 'No reason provided.') .
-                    ' Please resolve this and contact the department.'
+                    "The {$deptName} department has rejected your application. " .
+                    'Reason: ' . ($remarks ?? 'No reason provided.')
                 );
             }
 
-            // 4. Re-evaluate overall application status
+            // Check if all departments are done — move to awaiting_registrar if so
             $this->evaluateApplicationCompletion($application);
         });
     }
 
     /**
-     * Manually issue a certificate (called by Registrar for edge cases).
-     * Delegates to CertificateService so the full PDF + QR code is generated,
-     * not just the database record.
-    */
+     * REGISTRAR FINAL APPROVAL
+     * Called when the registrar clicks "Approve & Issue Certificate".
+     * This is the ONLY place certificates are generated.
+     */
+    public function registrarApprove(ClearanceApplication $application, User $registrar): ClearanceCertificate
+    {
+        return DB::transaction(function () use ($application, $registrar) {
+
+            // Mark as fully approved
+            $application->update([
+                'status'       => ClearanceStatus::Approved->value,
+                'completed_at' => now(),
+            ]);
+
+            $this->audit(
+                $registrar,
+                'registrar_approved',
+                ClearanceApplication::class,
+                $application->id,
+                ['status' => ClearanceStatus::AwaitingRegistrar->value],
+                ['status' => ClearanceStatus::Approved->value]
+            );
+
+            // Now issue the certificate
+            return $this->issueCertificate($application);
+        });
+    }
+
+    /**
+     * REGISTRAR REJECTION
+     * Called when the registrar rejects an application even after all depts approved.
+     */
+    public function registrarReject(ClearanceApplication $application, User $registrar, string $remarks): void
+    {
+        DB::transaction(function () use ($application, $registrar, $remarks) {
+
+            $application->update([
+                'status'  => ClearanceStatus::Rejected->value,
+                'remarks' => $remarks,
+            ]);
+
+            $this->audit(
+                $registrar,
+                'registrar_rejected',
+                ClearanceApplication::class,
+                $application->id,
+                ['status' => ClearanceStatus::AwaitingRegistrar->value],
+                ['status' => ClearanceStatus::Rejected->value, 'remarks' => $remarks]
+            );
+
+            $this->notify(
+                $application->student->user,
+                'application_rejected',
+                'Application Rejected by Registrar',
+                'Your application was rejected by the Academic Registrar. ' .
+                'Reason: ' . $remarks . ' Please contact the Registrar\'s office for more information.'
+            );
+        });
+    }
+
+    /**
+     * Issue a certificate — only called by registrarApprove().
+     */
     public function issueCertificate(ClearanceApplication $application): ClearanceCertificate
     {
-         // Force status to cleared so CertificateService proceeds
-         if ($application->status->value !== 'cleared') {
-             $application->update([
-                 'status'       => ClearanceStatus::Cleared->value,
-                 'completed_at' => $application->completed_at ?? now(),
-           ]);
+        // Guard: don't issue twice
+        if ($application->certificate) {
+            return $application->certificate;
         }
 
-        $certificate = app(\App\Services\CertificateService::class)
-             ->generateForApplication($application->fresh());
+        $student           = $application->student;
+        $certificateNumber = $this->generateCertificateNumber();
+        $verificationToken = Str::uuid()->toString();
+
+        $certificate = ClearanceCertificate::create([
+            'application_id'     => $application->id,
+            'certificate_number' => $certificateNumber,
+            'verification_token' => $verificationToken,
+            'issued_at'          => now(),
+        ]);
 
         $this->notify(
-             $application->student->user,
-             'certificate_issued',
-             'Clearance Certificate Ready',
-             "Congratulations! Your clearance certificate ({$certificate->certificate_number}) has been issued. " .
-             'You can now download it from your dashboard.'
+            $student->user,
+            'certificate_issued',
+            'Certificate Ready 🎉',
+            "Congratulations! Your clearance certificate ({$certificateNumber}) " .
+            'has been issued and approved by the Registrar. You can now download it from your dashboard.'
         );
 
         $this->audit(
-             $application->student->user,
-             'certificate_issued',
-             ClearanceCertificate::class,
-             $certificate->id,
-             null,
-             ['certificate_number' => $certificate->certificate_number]
+            $student->user,
+            'certificate_issued',
+            ClearanceCertificate::class,
+            $certificate->id,
+            null,
+            ['certificate_number' => $certificateNumber]
         );
 
         return $certificate;
     }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
 
     /**
-     * After each department review, re-check the overall application status.
-     *
-     * FIX: We refresh() the application from DB so stale in-memory enum
-     * objects don't cause false reads. We then compare raw string values
-     * via statusValue() instead of relying on enum equality.
+     * After each department review, check if ALL departments have approved.
+     * If yes → move to 'awaiting_registrar' (NOT approved, NOT certificate yet).
+     * If any rejected → mark whole application rejected.
      */
     private function evaluateApplicationCompletion(ClearanceApplication $application): void
     {
-        // Reload fresh from DB — clears any stale casted enum objects
         $application->refresh();
         $application->load('departmentClearances', 'student.user');
 
@@ -226,34 +267,33 @@ class ClearanceService
             $this->notify(
                 $application->student->user,
                 'application_rejected',
-                'Clearance Application Rejected',
-                'Your clearance application has been rejected by one or more departments. ' .
+                'Application Rejected',
+                'Your application has been rejected by one or more departments. ' .
                 'Please resolve any outstanding issues and reapply.'
             );
 
         } elseif ($approvedCount === $total && $total > 0) {
-             $application->update([
-                 'status'       => ClearanceStatus::Cleared->value,
-                 'completed_at' => now(),
-             ]);
+            // All departments cleared — now waiting for Registrar sign-off
+            $application->update([
+                'status' => ClearanceStatus::AwaitingRegistrar->value,
+            ]);
 
-            $this->issueCertificate($application);
+            // Notify the student their application is with the Registrar
+            $this->notify(
+                $application->student->user,
+                'awaiting_registrar',
+                'Awaiting Registrar Approval',
+                'All departments have cleared your application. ' .
+                'It has been forwarded to the Academic Registrar for final approval.'
+            );
         }
-        // Partial approvals — still pending, nothing to do
+        // Otherwise still pending — some departments haven't reviewed yet
     }
 
-    /**
-     * Safely extract the string value from a status field.
-     * Handles: enum object, raw string (DB::table() inserts), or null.
-     */
     private function statusValue(mixed $status): string
     {
-        if ($status instanceof DepartmentClearanceStatus) {
-            return $status->value;
-        }
-        if ($status instanceof ClearanceStatus) {
-            return $status->value;
-        }
+        if ($status instanceof DepartmentClearanceStatus) return $status->value;
+        if ($status instanceof ClearanceStatus) return $status->value;
         return (string) $status;
     }
 

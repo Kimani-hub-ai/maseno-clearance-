@@ -13,29 +13,23 @@ class RegistrarController extends Controller
 {
     public function __construct(protected ClearanceService $clearanceService) {}
 
-    /**
-     * Registrar dashboard: overview stats + list of all applications.
-     */
     public function index(Request $request)
     {
         $stats = [
-            'total_students'     => Student::count(),
-            'total_applications' => ClearanceApplication::count(),
-            // FIX: use ->value to pass raw string to query builder, not enum object
-            'pending'            => ClearanceApplication::where('status', ClearanceStatus::Pending->value)->count(),
-            'approved'           => ClearanceApplication::where('status', ClearanceStatus::Approved->value)->count(),
-            'rejected'           => ClearanceApplication::where('status', ClearanceStatus::Rejected->value)->count(),
+            'total_students'      => Student::count(),
+            'total_applications'  => ClearanceApplication::count(),
+            'pending'             => ClearanceApplication::where('status', ClearanceStatus::Pending->value)->count(),
+            'awaiting_registrar'  => ClearanceApplication::where('status', ClearanceStatus::AwaitingRegistrar->value)->count(),
+            'approved'            => ClearanceApplication::where('status', ClearanceStatus::Approved->value)->count(),
+            'rejected'            => ClearanceApplication::where('status', ClearanceStatus::Rejected->value)->count(),
         ];
 
-        // Build query with optional filters
         $query = ClearanceApplication::with(['student', 'departmentClearances', 'certificate']);
 
-        // Filter by status (from dashboard tab clicks)
-        if ($request->filled('status') && in_array($request->status, ['pending', 'approved', 'rejected'])) {
+        if ($request->filled('status') && in_array($request->status, ['pending', 'awaiting_registrar', 'approved', 'rejected'])) {
             $query->where('status', $request->status);
         }
 
-        // Search by student name or reg number
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('student', function ($q) use ($search) {
@@ -44,14 +38,15 @@ class RegistrarController extends Controller
             });
         }
 
-        $applications = $query->latest()->paginate(15)->withQueryString();
+        // Default: show awaiting_registrar first so they're never missed
+        $applications = $query->orderByRaw("FIELD(status, 'awaiting_registrar', 'pending', 'rejected', 'approved')")
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('dashboards.registrar', compact('stats', 'applications'));
     }
 
-    /**
-     * Show a single application in full detail.
-     */
     public function show(ClearanceApplication $application)
     {
         $application->load([
@@ -66,16 +61,41 @@ class RegistrarController extends Controller
     }
 
     /**
-     * Registrar manually overrides and issues a certificate (edge cases).
+     * Registrar final approval — triggers certificate generation.
      */
-    public function issueCertificate(ClearanceApplication $application)
+    public function approve(ClearanceApplication $application, Request $request)
     {
+        if ($application->status->value !== ClearanceStatus::AwaitingRegistrar->value) {
+            return back()->with('error', 'This application is not ready for registrar approval.');
+        }
+
         if ($application->certificate) {
             return back()->with('info', 'A certificate has already been issued for this application.');
         }
 
-        $this->clearanceService->issueCertificate($application);
+        $this->clearanceService->registrarApprove($application, $request->user());
 
-        return back()->with('success', 'Certificate issued successfully.');
+        return back()->with('success', 'Application approved and certificate issued successfully.');
+    }
+
+    /**
+     * Registrar rejects even after all departments approved.
+     */
+    public function reject(ClearanceApplication $application, Request $request)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:1000',
+        ]);
+
+        if (!in_array($application->status->value, [
+            ClearanceStatus::AwaitingRegistrar->value,
+            ClearanceStatus::Pending->value,
+        ])) {
+            return back()->with('error', 'This application cannot be rejected at this stage.');
+        }
+
+        $this->clearanceService->registrarReject($application, $request->user(), $request->remarks);
+
+        return back()->with('success', 'Application has been rejected and the student notified.');
     }
 }

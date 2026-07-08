@@ -74,6 +74,8 @@ Route::middleware(['auth', 'role:officer'])
 |--------------------------------------------------------------------------
 */
 
+// Replace your existing registrar route group in routes/web.php with this:
+
 Route::middleware(['auth', 'role:registrar'])
     ->prefix('registrar')
     ->name('registrar.')
@@ -81,10 +83,15 @@ Route::middleware(['auth', 'role:registrar'])
         Route::get('/dashboard', [RegistrarController::class, 'index'])->name('dashboard');
         Route::get('/applications/{application}', [RegistrarController::class, 'show'])
             ->name('applications.show');
-        Route::post('/applications/{application}/issue-certificate', [RegistrarController::class, 'issueCertificate'])
-            ->name('applications.issue-certificate');
-    });
 
+        // Final registrar sign-off — approve triggers certificate
+        Route::post('/applications/{application}/approve', [RegistrarController::class, 'approve'])
+            ->name('applications.approve');
+
+        // Registrar rejection with mandatory remarks
+        Route::post('/applications/{application}/reject', [RegistrarController::class, 'reject'])
+            ->name('applications.reject');
+    });
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
