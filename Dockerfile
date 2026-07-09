@@ -11,7 +11,7 @@ ENV WEBROOT /var/www/html/public
 ENV APP_ENV production
 
 # Run composer installation for production optimization
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Fix permissions so the web server can read and write files
 RUN chown -R xfs:xfs /var/www/html/storage /var/www/html/bootstrap/cache
