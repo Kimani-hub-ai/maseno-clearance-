@@ -10,5 +10,5 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-pl
 
 RUN chown -R xfs:xfs /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Overriding the default entry command using the image's native shell wrapper
-CMD ["/bin/sh", "-c", "php artisan migrate --force && /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf"]
+# Run migrations, then hand execution back over to the container's native entrypoint script
+ENTRYPOINT ["/bin/sh", "-c", "php artisan migrate --force && exec /start.sh"]
