@@ -10,5 +10,5 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-pl
 
 RUN chown -R xfs:xfs /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Run migrations, then hand execution back over to the container's native entrypoint script
-ENTRYPOINT ["/bin/sh", "-c", "php artisan migrate --force && exec /start.sh"]
+# Clears stale caches, ensures migrations execute, and boots the native start script safely
+ENTRYPOINT ["/bin/sh", "-c", "php artisan config:clear && php artisan cache:clear && php artisan migrate --force && exec /start.sh"]
