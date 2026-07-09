@@ -111,3 +111,21 @@ Route::middleware(['auth', 'role:admin'])
 */
 
 require __DIR__.'/auth.php';
+
+use Illuminate\Support\Facades\Artisan;
+
+
+// Temporary deployment route - Wipes and seeds your database
+Route::get('/deploy-database-secure-xyz789', function () {
+    try {
+        // Run the fresh migration and seeders forcefully
+        Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true,
+        ]);
+        
+        return "🚀 Database successfully initialized and seeded! Output: <br><pre>" . Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "❌ Error migrating database: " . $e->getMessage();
+    }
+});
