@@ -1,178 +1,355 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Clearance Certificate — {{ $certificate->certificate_number }}</title>
     <style>
-        @page {
-            margin: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'DejaVu Sans', sans-serif;
-            margin: 0;
+            font-family: "Times New Roman", Times, serif;
+            background: #ffffff;
+            color: #1a1a2e;
+            width: 297mm;
+            min-height: 210mm;
             padding: 0;
-            color: #1f2937;
         }
-        .certificate {
-            border: 12px solid #1F4E5C;
-            padding: 50px 60px;
-            margin: 20px;
-            text-align: center;
-            position: relative;
+
+        /* ── Outer border frame ── */
+        .outer-border {
+            position: fixed;
+            top: 8mm; left: 8mm; right: 8mm; bottom: 8mm;
+            border: 3px solid #003B5C;
         }
         .inner-border {
-            border: 2px solid #c9a227;
-            padding: 40px;
+            position: fixed;
+            top: 11mm; left: 11mm; right: 11mm; bottom: 11mm;
+            border: 1px solid #00AEEF;
+        }
+
+        /* ── Page content ── */
+        .page {
+            padding: 18mm 20mm;
+            min-height: 210mm;
+            position: relative;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #003B5C;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
         }
         .university-name {
-            font-size: 26px;
+            font-size: 24pt;
             font-weight: bold;
-            color: #1F4E5C;
+            color: #003B5C;
             letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-        .subtitle {
-            font-size: 13px;
-            color: #595959;
-            margin-bottom: 30px;
             text-transform: uppercase;
+        }
+        .university-sub {
+            font-size: 11pt;
+            color: #00AEEF;
+            margin-top: 2px;
             letter-spacing: 2px;
-        }
-        .title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #c9a227;
-            margin: 20px 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
+        .doc-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #003B5C;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .doc-subtitle {
+            font-size: 10pt;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        /* ── Certificate body ── */
         .body-text {
-            font-size: 14px;
+            font-size: 12pt;
             line-height: 1.8;
-            margin: 20px 0;
-            color: #374151;
+            text-align: center;
+            margin: 14px 20px;
+            color: #1a1a2e;
         }
         .student-name {
-            font-size: 24px;
+            font-size: 20pt;
             font-weight: bold;
-            color: #1F4E5C;
-            margin: 15px 0;
-            border-bottom: 1px solid #c9a227;
-            display: inline-block;
-            padding-bottom: 4px;
+            color: #003B5C;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            display: block;
+            margin: 6px 0;
         }
-        .details-table {
-            width: 100%;
-            margin: 30px 0;
-            font-size: 12px;
-        }
-        .details-table td {
-            padding: 6px 10px;
-            text-align: left;
-        }
-        .details-table .label {
-            color: #595959;
-            width: 40%;
-        }
-        .details-table .value {
+        .highlight {
             font-weight: bold;
-            color: #1f2937;
+            color: #003B5C;
         }
-        .footer-row {
-            margin-top: 40px;
+
+        /* ── Details grid ── */
+        .details-box {
+            background: #f0f9ff;
+            border: 1px solid #00AEEF;
+            border-radius: 4px;
+            padding: 10px 20px;
+            margin: 12px 0;
+        }
+        .details-grid {
+            display: table;
             width: 100%;
         }
-        .footer-row table {
-            width: 100%;
+        .detail-row {
+            display: table-row;
         }
-        .footer-row td {
-            vertical-align: bottom;
+        .detail-label {
+            display: table-cell;
+            font-size: 9pt;
+            color: #555;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 16px 3px 0;
+            width: 35%;
+        }
+        .detail-value {
+            display: table-cell;
+            font-size: 10pt;
+            font-weight: bold;
+            color: #003B5C;
+            padding: 3px 0;
+        }
+
+        /* ── Departments cleared ── */
+        .dept-section {
+            margin: 10px 0;
+        }
+        .dept-title {
+            font-size: 9pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 6px;
             text-align: center;
         }
-        .qr-code {
-            width: 90px;
-            height: 90px;
+        .dept-grid {
+            display: table;
+            width: 100%;
         }
-        .cert-number {
-            font-size: 10px;
-            color: #595959;
-            margin-top: 8px;
+        .dept-cell {
+            display: table-cell;
+            text-align: center;
+            padding: 4px 6px;
+            font-size: 8.5pt;
+            width: 14.28%;
         }
-        .signature-line {
-            border-top: 1px solid #1f2937;
-            width: 200px;
-            margin: 0 auto;
-            padding-top: 6px;
-            font-size: 11px;
-            color: #595959;
+        .dept-check {
+            color: #059669;
+            font-size: 11pt;
+            font-weight: bold;
+            display: block;
         }
-        .issued-date {
-            font-size: 11px;
-            color: #595959;
+        .dept-name-cell {
+            color: #333;
+            font-size: 7.5pt;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* ── Signature row ── */
+        .signature-section {
+            margin-top: 14px;
+            display: table;
+            width: 100%;
+        }
+        .sig-col {
+            display: table-cell;
+            text-align: center;
+            width: 33.33%;
+            padding: 0 10px;
+            vertical-align: bottom;
+        }
+        .sig-line {
+            border-top: 1px solid #003B5C;
+            padding-top: 5px;
             margin-top: 30px;
+        }
+        .sig-name {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #003B5C;
+        }
+        .sig-title {
+            font-size: 8.5pt;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            display: table;
+            width: 100%;
+        }
+        .footer-left {
+            display: table-cell;
+            font-size: 7.5pt;
+            color: #888;
+            vertical-align: middle;
+        }
+        .footer-right {
+            display: table-cell;
+            text-align: right;
+            font-size: 7.5pt;
+            color: #888;
+            vertical-align: middle;
+        }
+        .cert-number-badge {
+            display: inline-block;
+            background: #003B5C;
+            color: white;
+            font-size: 8pt;
+            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* ── Watermark ── */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 72pt;
+            font-weight: bold;
+            color: rgba(0, 59, 92, 0.04);
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            white-space: nowrap;
+            z-index: -1;
         }
     </style>
 </head>
 <body>
-    <div class="certificate">
-        <div class="inner-border">
-            <div class="university-name">MASENO UNIVERSITY</div>
-            <div class="subtitle">Republic of Kenya</div>
 
-            <div class="title">Certificate of Clearance</div>
+    <div class="outer-border"></div>
+    <div class="inner-border"></div>
+    <div class="watermark">MASENO UNIVERSITY</div>
 
-            <div class="body-text">This is to certify that</div>
+    <div class="page">
 
-            <div class="student-name">{{ $student->full_name }}</div>
+        {{-- Header --}}
+        <div class="header">
+            <div class="university-name">Maseno University</div>
+            <div class="university-sub">Office of the Academic Registrar</div>
+            <div class="doc-title">Certificate of Clearance</div>
+            <div class="doc-subtitle">This is to certify that the following student has been duly cleared by all university departments</div>
+        </div>
 
-            <div class="body-text">
-                Registration Number <strong>{{ $student->reg_number }}</strong>,
-                a student of the <strong>{{ $student->programme }}</strong> programme
-                in the {{ $student->faculty }}, has successfully completed the
-                university clearance process for the academic year
-                <strong>{{ $application->academic_year }}</strong> and has been found
-                to have no outstanding obligations to any university department.
-            </div>
+        {{-- Body text --}}
+        <div class="body-text">
+            This is to certify that
+            <span class="student-name">{{ strtoupper($student->full_name) }}</span>
+            of
+            <span class="highlight">{{ $student->faculty }}</span>,
+            pursuing a programme in
+            <span class="highlight">{{ $student->programme }}</span>
+            with Registration Number
+            <span class="highlight">{{ $student->reg_number }}</span>
+            has been fully cleared by all university departments
+            for the academic year <span class="highlight">{{ $application->academic_year }}</span>.
+        </div>
 
-            <table class="details-table">
-                <tr>
-                    <td class="label">Faculty:</td>
-                    <td class="value">{{ $student->faculty }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Department:</td>
-                    <td class="value">{{ $student->department }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Graduation Year:</td>
-                    <td class="value">{{ $student->graduation_year }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Certificate Number:</td>
-                    <td class="value">{{ $certificate->certificate_number }}</td>
-                </tr>
-            </table>
-
-            <div class="footer-row">
-                <table>
-                    <tr>
-                        <td style="width: 33%;">
-                            <div class="signature-line">Academic Registrar</div>
-                        </td>
-                        <td style="width: 34%;">
-                            <img src="{{ $qrDataUri }}" class="qr-code" alt="QR Code">
-                            <div class="cert-number">Scan to verify authenticity</div>
-                        </td>
-                        <td style="width: 33%;">
-                            <div class="signature-line">Date Issued</div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="issued-date">
-                Issued on {{ $certificate->issued_at->format('jS F Y') }}
+        {{-- Details box --}}
+        <div class="details-box">
+            <div class="details-grid">
+                <div class="detail-row">
+                    <div class="detail-label">Application Type</div>
+                    <div class="detail-value">
+                        @php
+                            $typeLabels = [
+                                'graduation' => 'Graduation Clearance',
+                                'deferral'   => 'Deferral of Studies',
+                                'transfer'   => 'Transfer to Another Institution',
+                                'withdrawal' => 'Withdrawal from University',
+                                'other'      => 'Other',
+                            ];
+                        @endphp
+                        {{ $typeLabels[$application->application_type ?? 'graduation'] ?? 'Graduation Clearance' }}
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Date of Issue</div>
+                    <div class="detail-value">{{ $certificate->issued_at->format('d F Y') }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Certificate No.</div>
+                    <div class="detail-value">{{ $certificate->certificate_number }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Verification Token</div>
+                    <div class="detail-value" style="font-size:8pt;color:#555;">{{ $certificate->verification_token }}</div>
+                </div>
             </div>
         </div>
+
+        {{-- Departments cleared --}}
+        <div class="dept-section">
+            <div class="dept-title">Cleared by the following departments</div>
+            <div class="dept-grid">
+                @foreach ($application->departmentClearances as $clearance)
+                    <div class="dept-cell">
+                        <span class="dept-check">✓</span>
+                        <span class="dept-name-cell">{{ $clearance->department->name }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Signatures --}}
+        <div class="signature-section">
+            <div class="sig-col">
+                <div class="sig-line">
+                    <div class="sig-name">Academic Registrar</div>
+                    <div class="sig-title">Maseno University</div>
+                </div>
+            </div>
+            <div class="sig-col">
+                <div class="sig-line">
+                    <div class="sig-name">{{ $student->full_name }}</div>
+                    <div class="sig-title">Student Signature</div>
+                </div>
+            </div>
+            <div class="sig-col">
+                <div class="sig-line">
+                    <div class="sig-name">Vice Chancellor</div>
+                    <div class="sig-title">Maseno University</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="footer">
+            <div class="footer-left">
+                Maseno University, Private Bag, Maseno, Kenya &bull;
+                Tel: +254 (057) 351622 &bull;
+                www.maseno.ac.ke
+            </div>
+            <div class="footer-right">
+                <span class="cert-number-badge">{{ $certificate->certificate_number }}</span>
+                &nbsp; Issued: {{ $certificate->issued_at->format('d M Y') }}
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

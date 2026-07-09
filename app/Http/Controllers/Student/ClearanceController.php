@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\User; // 🌟 Added User model for notification targeting
+use App\Notifications\ClearanceUpdateNotification; // 🌟 Added Notification Class
 use App\Services\ClearanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,7 +65,8 @@ class ClearanceController extends Controller
             'remarks'          => 'nullable|string|max:1000',
         ]);
 
-        $student      = Auth::user()->student;
+        $user         = Auth::user(); // 🌟 Grab user instance for notification
+        $student      = $user->student;
         $academicYear = $this->currentAcademicYear();
 
         if ($this->clearanceService->hasActiveApplication($student, $academicYear)) {
@@ -76,12 +79,43 @@ class ClearanceController extends Controller
             $student->update(['full_name' => $validated['full_name']]);
         }
 
-        $this->clearanceService->createApplication(
+        // Create the application via the service wrapper
+        $application = $this->clearanceService->createApplication(
             $student,
             $academicYear,
             $validated['application_type'],
             $validated['remarks'] ?? null
         );
+
+        // ═════════════════════════════════════════════════════════════════
+        // 🌟 EMAIL TRIGGER: CONFIRMATION TO STUDENT
+        // ═════════════════════════════════════════════════════════════════
+        $user->notify(new ClearanceUpdateNotification([
+            'subject'  => 'Clearance Application Submitted Successfully',
+            'greeting' => "Hello {$validated['full_name']},",
+            'lines'    => [
+                "Your university clearance application for the Academic Year {$academicYear} has been captured successfully.",
+                "Tracking Reference ID: #" . ($application->id ?? 'Pending'),
+                "Status: Sent to all departmental desks for verification review.",
+            ]
+        ]));
+
+        // ═════════════════════════════════════════════════════════════════
+        // 🌟 EMAIL TRIGGER: NOTIFY ALL ASSIGNED DEPARTMENT DESK OFFICERS
+        // ═════════════════════════════════════════════════════════════════
+        // Grabs all system users assigned the 'officer' or 'staff' role
+        $officers = User::where('role', 'officer')->get();
+        
+        foreach ($officers as $officer) {
+            $officer->notify(new ClearanceUpdateNotification([
+                'subject'  => 'Action Required: New Clearance Assignment',
+                'greeting' => "Hello Officer,",
+                'lines'    => [
+                    "A new clearance workflow has been initiated by student: {$validated['full_name']}.",
+                    "Please log into your administrative dashboard to review their status records.",
+                ]
+            ]));
+        }
 
         return redirect()->route('student.clearance.index')
             ->with('success', 'Your application has been submitted to all departments for review.');

@@ -12,6 +12,7 @@ use App\Models\DepartmentClearance;
 use App\Models\Notification;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\ClearanceUpdateNotification; // 🌟 Added Notification Class
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -59,9 +60,9 @@ class ClearanceService
             $this->notify(
                 $student->user,
                 'application_submitted',
-                'Application Submitted',
-                "Your application for {$academicYear} has been submitted to " .
-                $departments->count() . ' department(s) for review.'
+                'Application Submitted Successfully',
+                "Your application for the Academic Year {$academicYear} has been captured. It has been routed to " .
+                $departments->count() . ' department(s) for verification review.'
             );
 
             $this->audit(
@@ -122,16 +123,15 @@ class ClearanceService
                 $this->notify(
                     $student->user,
                     'department_approved',
-                    "{$deptName} Cleared",
-                    "The {$deptName} department has approved your application."
+                    "Department Cleared: {$deptName}",
+                    "Good news! The {$deptName} desk has verified your records and approved your status."
                 );
             } else {
                 $this->notify(
                     $student->user,
                     'department_rejected',
-                    "{$deptName} Rejected",
-                    "The {$deptName} department has rejected your application. " .
-                    'Reason: ' . ($remarks ?? 'No reason provided.')
+                    "Attention Required: Clearance Flagged by {$deptName}",
+                    "Your clearance application was flagged by the {$deptName} department. Reason: " . ($remarks ?? 'No explicit reason provided.')
                 );
             }
 
@@ -194,9 +194,8 @@ class ClearanceService
             $this->notify(
                 $application->student->user,
                 'application_rejected',
-                'Application Rejected by Registrar',
-                'Your application was rejected by the Academic Registrar. ' .
-                'Reason: ' . $remarks . ' Please contact the Registrar\'s office for more information.'
+                'Clearance Application Rejected by Registrar',
+                "Your application was rejected during the final Registrar review. Reason provided: {$remarks}"
             );
         });
     }
@@ -225,9 +224,8 @@ class ClearanceService
         $this->notify(
             $student->user,
             'certificate_issued',
-            'Certificate Ready 🎉',
-            "Congratulations! Your clearance certificate ({$certificateNumber}) " .
-            'has been issued and approved by the Registrar. You can now download it from your dashboard.'
+            '🎓 Official University Clearance Approved!',
+            "Congratulations! Your final university clearance has been approved by the Academic Registrar. Your official clearance certificate has been generated safely. Certificate Number: {$certificateNumber}."
         );
 
         $this->audit(
@@ -267,9 +265,8 @@ class ClearanceService
             $this->notify(
                 $application->student->user,
                 'application_rejected',
-                'Application Rejected',
-                'Your application has been rejected by one or more departments. ' .
-                'Please resolve any outstanding issues and reapply.'
+                'Clearance Application Flagged',
+                'Your clearance request has been rejected or flagged by one or more structural departments. Please check your logs, resolve outstanding entries, and re-submit.'
             );
 
         } elseif ($approvedCount === $total && $total > 0) {
@@ -282,12 +279,10 @@ class ClearanceService
             $this->notify(
                 $application->student->user,
                 'awaiting_registrar',
-                'Awaiting Registrar Approval',
-                'All departments have cleared your application. ' .
-                'It has been forwarded to the Academic Registrar for final approval.'
+                'Application Forwarded to Registrar',
+                'Congratulations! All structural university departments have cleared your application. It has been automatically forwarded to the Academic Registrar for final sign-off.'
             );
         }
-        // Otherwise still pending — some departments haven't reviewed yet
     }
 
     private function statusValue(mixed $status): string
@@ -304,8 +299,13 @@ class ClearanceService
         return sprintf('MAS-CLR-%d-%05d', $year, $count);
     }
 
+    /**
+     * Reusable System Notification Center
+     * 🌟 AUTOMATIC SMTP ROUTER INCLUDED
+     */
     private function notify(User $user, string $type, string $title, string $message): void
     {
+        // 1. Write the fallback In-App dashboard entry row
         Notification::create([
             'user_id' => $user->id,
             'type'    => $type,
@@ -314,6 +314,21 @@ class ClearanceService
             'channel' => 'in_app',
             'is_read' => false,
         ]);
+
+        // 2. 🌟 FIRE THE REAL-TIME BACKGROUND SMTP QUEUED MAIL HANDLER
+        try {
+            $user->notify(new ClearanceUpdateNotification([
+                'subject'  => $title,
+                'greeting' => "Hello {$user->name},",
+                'lines'    => [
+                    $message,
+                    "Log into your system dashboard portal terminal to track detailed real-time verification logs."
+                ]
+            ]));
+        } catch (\Exception $e) {
+            // Failsafe catch so if local network drops during testing, database actions still process cleanly.
+            logger()->error("SMTP Outbound Failed: " . $e->getMessage());
+        }
     }
 
     private function audit(

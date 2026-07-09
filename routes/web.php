@@ -74,8 +74,6 @@ Route::middleware(['auth', 'role:officer'])
 |--------------------------------------------------------------------------
 */
 
-// Replace your existing registrar route group in routes/web.php with this:
-
 Route::middleware(['auth', 'role:registrar'])
     ->prefix('registrar')
     ->name('registrar.')
