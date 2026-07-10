@@ -129,3 +129,13 @@ Route::get('/deploy-database-secure-xyz789', function () {
         return "❌ Error migrating database: " . $e->getMessage();
     }
 });
+
+Route::get('/debug-mail', function() {
+    return [
+        'mailer'   => config('mail.default'),
+        'host'     => config('mail.mailers.smtp.host'),
+        'port'     => config('mail.mailers.smtp.port'),
+        'username' => config('mail.mailers.smtp.username'),
+        'from'     => config('mail.from'),
+    ];
+});
