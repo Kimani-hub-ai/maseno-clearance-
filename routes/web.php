@@ -81,15 +81,12 @@ Route::middleware(['auth', 'role:registrar'])
         Route::get('/dashboard', [RegistrarController::class, 'index'])->name('dashboard');
         Route::get('/applications/{application}', [RegistrarController::class, 'show'])
             ->name('applications.show');
-
-        // Final registrar sign-off — approve triggers certificate
         Route::post('/applications/{application}/approve', [RegistrarController::class, 'approve'])
             ->name('applications.approve');
-
-        // Registrar rejection with mandatory remarks
         Route::post('/applications/{application}/reject', [RegistrarController::class, 'reject'])
             ->name('applications.reject');
     });
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
@@ -111,31 +108,3 @@ Route::middleware(['auth', 'role:admin'])
 */
 
 require __DIR__.'/auth.php';
-
-use Illuminate\Support\Facades\Artisan;
-
-
-// Temporary deployment route - Wipes and seeds your database
-Route::get('/deploy-database-secure-xyz789', function () {
-    try {
-        // Run the fresh migration and seeders forcefully
-        Artisan::call('migrate:fresh', [
-            '--seed' => true,
-            '--force' => true,
-        ]);
-        
-        return "🚀 Database successfully initialized and seeded! Output: <br><pre>" . Artisan::output() . "</pre>";
-    } catch (\Exception $e) {
-        return "❌ Error migrating database: " . $e->getMessage();
-    }
-});
-
-Route::get('/debug-mail', function() {
-    return [
-        'mailer'   => config('mail.default'),
-        'host'     => config('mail.mailers.smtp.host'),
-        'port'     => config('mail.mailers.smtp.port'),
-        'username' => config('mail.mailers.smtp.username'),
-        'from'     => config('mail.from'),
-    ];
-});
