@@ -27,7 +27,8 @@
             width: var(--sidebar-w);
             background: var(--mu-navy);
             display: flex; flex-direction: column;
-            z-index: 100;
+            z-index: 300;
+            transition: transform 0.25s ease;
         }
         .sidebar-brand {
             padding: 20px 16px 16px;
@@ -61,9 +62,10 @@
         .sidebar-section { padding: 8px 16px 4px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link {
             display: flex; align-items: center; gap: 10px;
-            padding: 9px 16px; font-size: 13px; color: rgba(255,255,255,0.7);
+            padding: 11px 16px; font-size: 13px; color: rgba(255,255,255,0.7);
             text-decoration: none; transition: all 0.15s;
             border-left: 3px solid transparent;
+            min-height: 44px; /* touch-friendly */
         }
         .sidebar-link:hover { background: rgba(255,255,255,0.07); color: white; }
         .sidebar-link.active { background: rgba(0,174,239,0.15); color: var(--mu-blue); border-left-color: var(--mu-blue); }
@@ -72,21 +74,41 @@
             font-size: 12px; color: rgba(255,255,255,0.4);
         }
 
+        /* ── Overlay (mobile only) ── */
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+        }
+        .sidebar-overlay.open { display: block; }
+
         /* ── Main ── */
         .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
         .topbar {
             background: white; border-bottom: 1px solid #E5E7EB;
-            padding: 0 28px; height: 56px;
+            padding: 0 20px; height: 56px;
             display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 50;
+            position: sticky; top: 0; z-index: 100;
         }
-        .topbar-title { font-size: 16px; font-weight: 600; color: var(--mu-navy); }
-        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-title { font-size: 15px; font-weight: 600; color: var(--mu-navy); }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+        /* Hamburger — hidden on desktop */
+        .hamburger {
+            display: none;
+            background: none; border: none; cursor: pointer;
+            padding: 6px; border-radius: 6px;
+            color: var(--mu-navy); font-size: 20px; line-height: 1;
+        }
+
         .notif-btn {
             position: relative; background: none; border: none; cursor: pointer;
-            width: 36px; height: 36px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: var(--mu-muted); transition: background 0.15s;
+            font-size: 18px;
         }
         .notif-btn:hover { background: var(--mu-gray); }
         .notif-badge {
@@ -96,10 +118,10 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* ── Notification panel — single clean definition ── */
+        /* ── Notification panel ── */
         .notif-panel {
             display: none;
-            position: absolute; top: 48px; right: 0;
+            position: absolute; top: 52px; right: 0;
             width: 320px;
             background: white; border-radius: 10px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.12);
@@ -109,7 +131,6 @@
             flex-direction: column;
         }
         .notif-panel.open { display: flex; }
-
         .notif-header {
             padding: 12px 16px;
             border-bottom: 1px solid #F3F4F6;
@@ -127,27 +148,29 @@
         .notif-item.unread { background: #F0F9FF; }
         .notif-empty { padding: 24px; text-align: center; color: var(--mu-muted); font-size: 13px; }
 
-        .page-content { padding: 28px; flex: 1; }
+        /* ── Page content ── */
+        .page-content { padding: 24px; flex: 1; }
 
         /* ── Cards & components ── */
         .card { background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
         .card-p { padding: 24px; }
         .page-title { font-size: 20px; font-weight: 700; color: var(--mu-navy); margin-bottom: 20px; }
         .section-title { font-size: 15px; font-weight: 600; color: var(--mu-navy); margin-bottom: 14px; }
-        .stat-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 24px; }
+        .stat-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 24px; }
         .stat-card {
-            background: white; border-radius: 10px; padding: 20px;
+            background: white; border-radius: 10px; padding: 18px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.07);
             border-left: 4px solid var(--mu-blue);
-            text-decoration: none;
+            text-decoration: none; display: block;
         }
         .stat-card .lbl { font-size: 12px; color: var(--mu-muted); margin-bottom: 6px; }
-        .stat-card .val { font-size: 28px; font-weight: 700; color: var(--mu-navy); }
+        .stat-card .val { font-size: 26px; font-weight: 700; color: var(--mu-navy); }
         .badge {
             display: inline-flex; align-items: center;
             padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
         }
         .badge-cleared, .badge-approved { background: #D1FAE5; color: #065F46; }
+        .badge-awaiting_registrar { background: #DBEAFE; color: #1D4ED8; }
         .badge-in_progress, .badge-submitted, .badge-pending { background: #FEF3C7; color: #92400E; }
         .badge-rejected { background: #FEE2E2; color: #991B1B; }
         .badge-draft { background: #F3F4F6; color: #374151; }
@@ -158,6 +181,7 @@
             padding: 10px 20px; background: var(--mu-blue); color: white;
             border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
             cursor: pointer; text-decoration: none; transition: background 0.15s;
+            min-height: 44px;
         }
         .btn-primary:hover { background: #0099D6; }
         .btn-navy {
@@ -165,18 +189,20 @@
             padding: 10px 20px; background: var(--mu-navy); color: white;
             border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
             cursor: pointer; text-decoration: none; transition: background 0.15s;
+            min-height: 44px;
         }
         .btn-navy:hover { background: #002a42; }
         .btn-secondary {
             padding: 8px 16px; background: var(--mu-gray); color: var(--mu-text);
             border: 1px solid #D1D5DB; border-radius: 8px; font-size: 13px;
-            cursor: pointer; transition: background 0.15s;
+            cursor: pointer; transition: background 0.15s; min-height: 44px;
         }
         .btn-secondary:hover { background: #E5E7EB; }
         .form-input {
-            width: 100%; padding: 9px 12px; border: 1px solid #D1D5DB;
-            border-radius: 8px; font-size: 14px; color: var(--mu-text);
+            width: 100%; padding: 10px 12px; border: 1px solid #D1D5DB;
+            border-radius: 8px; font-size: 15px; color: var(--mu-text);
             transition: border-color 0.15s;
+            -webkit-appearance: none; /* remove iOS styling */
         }
         .form-input:focus { outline: none; border-color: var(--mu-blue); box-shadow: 0 0 0 3px rgba(0,174,239,0.1); }
         .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--mu-text); margin-bottom: 6px; }
@@ -186,9 +212,9 @@
         tbody tr:hover td { background: #F9FAFB; }
         .progress-bar { width: 100%; height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--mu-blue); border-radius: 3px; transition: width 0.3s; }
-        .dept-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+        .dept-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F3F4F6; gap: 8px; }
         .dept-row:last-child { border-bottom: none; }
-        .dept-name { font-size: 14px; font-weight: 500; color: var(--mu-text); display: flex; align-items: center; gap: 8px; }
+        .dept-name { font-size: 14px; font-weight: 500; color: var(--mu-text); display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
         .dept-status { font-size: 12px; font-weight: 600; }
         .dept-approved { color: #059669; }
         .dept-pending { color: #D97706; }
@@ -203,12 +229,86 @@
         .cert-meta { font-size: 12px; color: var(--mu-muted); margin-top: 10px; }
         .hover-row { transition: background 0.1s; }
         .hover-row:hover { background: var(--mu-gray); }
+
+        /* ════════════════════════════════════
+           MOBILE STYLES (max-width: 768px)
+        ════════════════════════════════════ */
+        @media (max-width: 768px) {
+
+            /* Sidebar hidden off-screen by default */
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px; /* slightly wider for easier touch */
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            /* Show hamburger */
+            .hamburger { display: flex; align-items: center; justify-content: center; }
+
+            /* Main takes full width */
+            .main-wrap { margin-left: 0; }
+
+            /* Topbar adjustments */
+            .topbar { padding: 0 16px; }
+            .topbar-title { font-size: 14px; }
+
+            /* Page content less padding */
+            .page-content { padding: 16px; }
+
+            /* Cards full width less padding */
+            .card-p { padding: 16px; }
+
+            /* Stat grid — 2 columns on mobile */
+            .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .stat-card { padding: 14px; }
+            .stat-card .val { font-size: 22px; }
+
+            /* Tables — horizontally scrollable */
+            .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { min-width: 500px; }
+
+            /* Notification panel full width on mobile */
+            .notif-panel {
+                width: calc(100vw - 32px);
+                right: -60px; /* shift left so it doesn't overflow */
+            }
+
+            /* Buttons full width on mobile forms */
+            .btn-block-mobile {
+                width: 100%; justify-content: center;
+            }
+
+            /* Department rows wrap on small screens */
+            .dept-row { flex-wrap: wrap; gap: 6px; }
+
+            /* Bigger touch targets for links */
+            .sidebar-link { padding: 13px 16px; font-size: 14px; }
+
+            /* Hide less important table columns on mobile */
+            .hide-mobile { display: none !important; }
+
+            /* Page title smaller */
+            .page-title { font-size: 17px; }
+            .section-title { font-size: 14px; }
+        }
+
+        /* Small phones */
+        @media (max-width: 380px) {
+            .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stat-card .val { font-size: 20px; }
+            .topbar-title { font-size: 13px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        }
     </style>
 </head>
 <body>
 
+{{-- Mobile overlay --}}
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 {{-- Sidebar --}}
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
         <div class="sidebar-brand-name">Maseno University</div>
         <div class="sidebar-brand-sub">Clearance System</div>
@@ -273,9 +373,16 @@
 {{-- Main --}}
 <div class="main-wrap">
     <header class="topbar">
-        <span class="topbar-title">
-            @isset($header){{ $header }}@else Maseno University Clearance System @endisset
-        </span>
+        <div class="topbar-left">
+            {{-- Hamburger menu button (mobile only) --}}
+            <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+                &#9776;
+            </button>
+            <span class="topbar-title">
+                @isset($header){{ $header }}@else Maseno University Clearance @endisset
+            </span>
+        </div>
+
         <div class="topbar-right">
             @auth
             @php
@@ -284,7 +391,7 @@
                     ->count();
             @endphp
             <div class="notif-wrapper" style="position:relative;">
-                <button class="notif-btn" id="notifBtn">
+                <button class="notif-btn" id="notifBtn" aria-label="Notifications">
                     🔔
                     @if($unreadCount > 0)
                         <span class="notif-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
@@ -324,28 +431,69 @@
 </div>
 
 <script>
+    // ── Sidebar toggle (mobile) ──
+    const hamburgerBtn  = document.getElementById('hamburgerBtn');
+    const sidebar       = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden'; // prevent scroll behind overlay
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+    }
+
+    // Close sidebar when overlay is tapped
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar when a nav link is tapped (mobile UX)
+    document.querySelectorAll('.sidebar-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        });
+    });
+
+    // ── Notification panel ──
     const notifBtn   = document.getElementById('notifBtn');
     const notifPanel = document.getElementById('notifPanel');
 
-    // Toggle open/close on bell click
     if (notifBtn && notifPanel) {
-        notifBtn.addEventListener('click', function (e) {
+        notifBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             notifPanel.classList.toggle('open');
         });
     }
 
-    // Close when clicking anywhere outside
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function(e) {
         if (notifPanel && !notifPanel.contains(e.target)) {
             notifPanel.classList.remove('open');
         }
     });
 
-    // Close on Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && notifPanel) {
-            notifPanel.classList.remove('open');
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (notifPanel) notifPanel.classList.remove('open');
+            closeSidebar();
         }
     });
 </script>
