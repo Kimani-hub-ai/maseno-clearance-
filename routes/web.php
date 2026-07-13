@@ -103,58 +103,6 @@ Route::middleware(['auth', 'role:admin'])
 
 /*
 |--------------------------------------------------------------------------
-| Mail Diagnostic / Troubleshooting Route
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/debug-mail', function() {
-    $host = config('mail.mailers.smtp.host');
-    $port = config('mail.mailers.smtp.port');
-    
-    $diagnostics = [
-        'laravel_configs' => [
-            'mailer'     => config('mail.default'),
-            'host'       => $host,
-            'port'       => $port,
-            'username'   => config('mail.mailers.smtp.username'),
-            'encryption' => config('mail.mailers.smtp.encryption'),
-            'from'       => config('mail.from'),
-        ],
-        'system_checks' => [
-            'openssl_loaded' => extension_loaded('openssl'),
-        ],
-        'network_test' => []
-    ];
-
-    // Attempt a socket handshake with a strict 5-second timeout threshold
-    if ($host && $port) {
-        $connection = @fsockopen($host, $port, $errno, $errstr, 5);
-        if (is_resource($connection)) {
-            $diagnostics['network_test'] = [
-                'status'  => '✅ SUCCESS',
-                'message' => "Physical outbound network path to {$host}:{$port} is wide open."
-            ];
-            fclose($connection);
-        } else {
-            $diagnostics['network_test'] = [
-                'status'        => '❌ BLOCKED / TIMEOUT',
-                'error_number'  => $errno,
-                'error_message' => $errstr,
-                'suggestion'    => "Render infrastructure is dropping outgoing traffic on port {$port}. Try switching your environment parameters to port 465 (with SSL) or port 587 (with TLS)."
-            ];
-        }
-    } else {
-        $diagnostics['network_test'] = [
-            'status'  => '❌ INVALID CONFIGS',
-            'message' => 'Host or Port settings are completely missing from environment readings.'
-        ];
-    }
-
-    return $diagnostics;
-});
-
-/*
-|--------------------------------------------------------------------------
 | Authentication Routes
 |--------------------------------------------------------------------------
 */
