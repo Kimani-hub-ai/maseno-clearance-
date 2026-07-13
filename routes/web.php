@@ -101,6 +101,16 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/officers', [AdminOfficerController::class, 'store'])->name('officers.store');
     });
 
+    Route::get('/debug-mail', function() {
+    return [
+        'mailer'   => config('mail.default'),
+        'host'     => config('mail.mailers.smtp.host'),
+        'port'     => config('mail.mailers.smtp.port'),
+        'username' => config('mail.mailers.smtp.username'),
+        'from'     => config('mail.from'),
+    ];
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes
