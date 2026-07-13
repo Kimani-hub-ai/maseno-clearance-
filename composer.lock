@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7734d8ddb0a15fe149a292d51b388911",
+    "content-hash": "e511c6a12f9c876cb2a33073cd0d0e48",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1458,44 +1458,42 @@
             "time": "2026-05-23T22:00:21+00:00"
         },
         {
-            "name": "hofmannsven/laravel-brevo",
-            "version": "2.2.1",
+            "name": "juanparati/brevosuite",
+            "version": "13.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/hofmannsven/laravel-brevo.git",
-                "reference": "2c6127c6f3aa055ca6fe903ea71063f0495a4a62"
+                "url": "https://github.com/juanparati/BrevoSuite.git",
+                "reference": "d8a2d097963e90537cbc5035c270b979bab126bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hofmannsven/laravel-brevo/zipball/2c6127c6f3aa055ca6fe903ea71063f0495a4a62",
-                "reference": "2c6127c6f3aa055ca6fe903ea71063f0495a4a62",
+                "url": "https://api.github.com/repos/juanparati/BrevoSuite/zipball/d8a2d097963e90537cbc5035c270b979bab126bf",
+                "reference": "d8a2d097963e90537cbc5035c270b979bab126bf",
                 "shasum": ""
             },
             "require": {
-                "getbrevo/brevo-php": "^1.0|^2.0",
-                "illuminate/contracts": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
-                "php": "^8.1"
+                "getbrevo/brevo-php": "~v2.0",
+                "illuminate/mail": "^13.0",
+                "laravel/framework": "^13.0",
+                "php": ">=8.3",
+                "symfony/brevo-mailer": "~7.0.3",
+                "symfony/http-client": "^7.0"
             },
             "require-dev": {
-                "laravel/pint": "^1.14",
-                "nunomaduro/collision": "^7.0|^8.0",
-                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
-                "phpunit/phpunit": "^10.5.62|^11.5.50|^12.5.22"
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.0"
             },
             "type": "library",
             "extra": {
                 "laravel": {
-                    "aliases": {
-                        "Brevo": "Hofmannsven\\Brevo\\Facades\\Brevo"
-                    },
                     "providers": [
-                        "Hofmannsven\\Brevo\\BrevoServiceProvider"
+                        "Juanparati\\BrevoSuite\\Providers\\BrevoSuiteProvider"
                     ]
                 }
             },
             "autoload": {
                 "psr-4": {
-                    "Hofmannsven\\Brevo\\": "src/"
+                    "Juanparati\\BrevoSuite\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1504,25 +1502,26 @@
             ],
             "authors": [
                 {
-                    "name": "Sven Hofmann",
-                    "email": "info@hofmannsven.com",
-                    "homepage": "https://hofmannsven.com",
-                    "role": "Developer"
+                    "name": "Juan Lago",
+                    "email": "juanparati@gmail.com"
                 }
             ],
-            "description": "Laravel wrapper for Brevo's API v3 PHP library.",
-            "homepage": "https://github.com/hofmannsven/laravel-brevo",
+            "description": "Complete Brevo integration with Laravel",
             "keywords": [
                 "brevo",
-                "laravel"
+                "email",
+                "getbrevo",
+                "laravel",
+                "mail",
+                "php",
+                "sendinblue",
+                "sms"
             ],
             "support": {
-                "email": "info@hofmannsven.com",
-                "issues": "https://github.com/hofmannsven/laravel-brevo/issues",
-                "source": "https://github.com/hofmannsven/laravel-brevo",
-                "wiki": "https://github.com/hofmannsven/laravel-brevo/wiki"
+                "issues": "https://github.com/juanparati/BrevoSuite/issues",
+                "source": "https://github.com/juanparati/BrevoSuite/tree/13.0.0"
             },
-            "time": "2026-04-20T08:41:40+00:00"
+            "time": "2026-05-05T05:45:50+00:00"
         },
         {
             "name": "laravel/framework",
@@ -3987,6 +3986,75 @@
             "time": "2021-02-08T20:43:55+00:00"
         },
         {
+            "name": "symfony/brevo-mailer",
+            "version": "v7.0.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/brevo-mailer.git",
+                "reference": "58080e5ef956f4a137637cf58b0adaf988f26211"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/brevo-mailer/zipball/58080e5ef956f4a137637cf58b0adaf988f26211",
+                "reference": "58080e5ef956f4a137637cf58b0adaf988f26211",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1",
+                "symfony/mailer": "^5.4.21|^6.2.7|^7.0"
+            },
+            "conflict": {
+                "symfony/mime": "<6.2"
+            },
+            "require-dev": {
+                "symfony/http-client": "^6.3|^7.0",
+                "symfony/webhook": "^6.3|^7.0"
+            },
+            "type": "symfony-mailer-bridge",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Mailer\\Bridge\\Brevo\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pierre Tanguy",
+                    "homepage": "https://github.com/petanguy"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Brevo Mailer Bridge",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/brevo-mailer/tree/v7.0.8"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-05-31T14:51:39+00:00"
+        },
+        {
             "name": "symfony/clock",
             "version": "v7.4.8",
             "source": {
@@ -4616,6 +4684,189 @@
                 }
             ],
             "time": "2026-03-24T13:12:05+00:00"
+        },
+        {
+            "name": "symfony/http-client",
+            "version": "v7.4.14",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-client.git",
+                "reference": "f6bc6b5a54ff5afac4725cacec9bf2f52eb15920"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/f6bc6b5a54ff5afac4725cacec9bf2f52eb15920",
+                "reference": "f6bc6b5a54ff5afac4725cacec9bf2f52eb15920",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "psr/log": "^1|^2|^3",
+                "symfony/deprecation-contracts": "^2.5|^3",
+                "symfony/http-client-contracts": "~3.4.4|^3.5.2",
+                "symfony/polyfill-php83": "^1.29",
+                "symfony/service-contracts": "^2.5|^3"
+            },
+            "conflict": {
+                "amphp/amp": "<2.5",
+                "amphp/socket": "<1.1",
+                "php-http/discovery": "<1.15",
+                "symfony/http-foundation": "<6.4"
+            },
+            "provide": {
+                "php-http/async-client-implementation": "*",
+                "php-http/client-implementation": "*",
+                "psr/http-client-implementation": "1.0",
+                "symfony/http-client-implementation": "3.0"
+            },
+            "require-dev": {
+                "amphp/http-client": "^4.2.1|^5.0",
+                "amphp/http-tunnel": "^1.0|^2.0",
+                "guzzlehttp/promises": "^1.4|^2.0",
+                "nyholm/psr7": "^1.0",
+                "php-http/httplug": "^1.0|^2.0",
+                "psr/http-client": "^1.0",
+                "symfony/amphp-http-client-meta": "^1.0|^2.0",
+                "symfony/cache": "^6.4|^7.0|^8.0",
+                "symfony/dependency-injection": "^6.4|^7.0|^8.0",
+                "symfony/http-kernel": "^6.4|^7.0|^8.0",
+                "symfony/messenger": "^6.4|^7.0|^8.0",
+                "symfony/process": "^6.4|^7.0|^8.0",
+                "symfony/rate-limiter": "^6.4|^7.0|^8.0",
+                "symfony/stopwatch": "^6.4|^7.0|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\HttpClient\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides powerful methods to fetch HTTP resources synchronously or asynchronously",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "http"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/http-client/tree/v7.4.14"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-06-16T11:50:14+00:00"
+        },
+        {
+            "name": "symfony/http-client-contracts",
+            "version": "v3.7.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-client-contracts.git",
+                "reference": "41fc42d276aeff21192465331ebbab7d83a743c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/41fc42d276aeff21192465331ebbab7d83a743c0",
+                "reference": "41fc42d276aeff21192465331ebbab7d83a743c0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
+                "branch-alias": {
+                    "dev-main": "3.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Contracts\\HttpClient\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Test/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Generic abstractions related to HTTP clients",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "standards"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/http-client-contracts/tree/v3.7.1"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-06-05T06:23:12+00:00"
         },
         {
             "name": "symfony/http-foundation",
