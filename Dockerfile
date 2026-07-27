@@ -16,9 +16,9 @@ RUN chown -R xfs:xfs /var/www/html/storage /var/www/html/bootstrap/cache
 # Run config clear, migrations, seeders (firstOrCreate so safe to re-run),
 # then optimize for production before booting the native start script
 ENTRYPOINT ["/bin/sh", "-c", "\
-    echo '--- ENV DEBUG ---' && \
-    env | grep -E 'DB_|CACHE_|SESSION_' && \
-    echo '--- END DEBUG ---' && \
+    echo '--- ENV DEBUG ---'; \
+    env; \
+    echo '--- END DEBUG ---'; \
     php artisan config:clear && \
     php artisan cache:clear && \
     php artisan migrate --force && \
