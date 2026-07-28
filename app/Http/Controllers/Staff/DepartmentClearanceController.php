@@ -10,56 +10,78 @@ use Illuminate\Http\Request;
 
 class DepartmentClearanceController extends Controller
 {
-    public function __construct(
-        protected ClearanceService $clearanceService
-    ) {}
+    public function __construct(protected ClearanceService $clearanceService) {}
 
-    /**
-     * Show all pending clearance requests for the logged-in officer's department.
-     */
     public function index(Request $request)
     {
-        $officer = $request->user();
+        $officer      = $request->user();
         $departmentId = $officer->departmentOfficer?->department_id;
 
         if (!$departmentId) {
-            return redirect()->back()->with('error', 'No department assigned to your account. Contact the administrator.');
+            return redirect()->back()
+                ->with('error', 'Your account has no department assigned. Please contact the administrator.');
         }
 
-        $pendingClearances = DepartmentClearance::with(['application.student', 'department'])
-            ->where('department_id', $departmentId)
-            ->where('status', DepartmentClearanceStatus::Pending)
-            ->orderBy('created_at', 'asc')
-            ->paginate(15);
+        // Active tab — default to pending
+        $tab = in_array($request->tab, ['pending', 'approved', 'rejected'])
+            ? $request->tab
+            : 'pending';
 
-        return view('dashboards.department', compact('pendingClearances', 'departmentId'));
+        // Stats for the tab badges
+        $stats = [
+            'pending'  => DepartmentClearance::where('department_id', $departmentId)
+                ->where('status', DepartmentClearanceStatus::Pending->value)->count(),
+            'approved' => DepartmentClearance::where('department_id', $departmentId)
+                ->where('status', DepartmentClearanceStatus::Approved->value)->count(),
+            'rejected' => DepartmentClearance::where('department_id', $departmentId)
+                ->where('status', DepartmentClearanceStatus::Rejected->value)->count(),
+        ];
+
+        // Load clearances for the active tab
+        $clearances = DepartmentClearance::with([
+            'clearanceApplication.student',
+            'clearanceApplication.departmentClearances',
+            'department',
+            'reviewer',
+        ])
+        ->where('department_id', $departmentId)
+        ->where('status', $tab)
+        ->orderBy('created_at', $tab === 'pending' ? 'asc' : 'desc')
+        ->paginate(12)
+        ->withQueryString();
+
+        return view('dashboards.department', compact(
+            'clearances',
+            'departmentId',
+            'tab',
+            'stats',
+            'officer'
+        ));
     }
 
-    /**
-     * Process an officer's approve or reject decision.
-     */
     public function review(Request $request, DepartmentClearance $checkpoint)
     {
         $validated = $request->validate([
             'action'  => 'required|in:approve,reject',
-            'remarks' => 'nullable|string|max:500',
+            'remarks' => 'nullable|string|max:1000',
         ]);
 
-        $officer = $request->user();
-
-        $departmentId = $officer->departmentOfficer?->department_id;
-        if ($departmentId !== $checkpoint->department_id) {
-            abort(403, 'You are not authorized to review this clearance.');
+        // Rejection requires a reason
+        if ($validated['action'] === 'reject' && empty($validated['remarks'])) {
+            return back()->withErrors(['remarks' => 'Please provide a reason for rejection.']);
         }
 
         $this->clearanceService->reviewDepartmentCheckpoint(
             $checkpoint,
             $validated['action'],
-            $officer,
+            $request->user(),
             $validated['remarks'] ?? null
         );
 
-        return redirect()->route('department.dashboard')
-            ->with('success', 'Clearance ' . $validated['action'] . 'd successfully.');
+        $action = $validated['action'] === 'approve' ? 'approved' : 'rejected';
+
+        return redirect()
+            ->route('department.dashboard', ['tab' => $validated['action'] === 'approve' ? 'pending' : 'pending'])
+            ->with('success', "Student clearance {$action} successfully.");
     }
 }
