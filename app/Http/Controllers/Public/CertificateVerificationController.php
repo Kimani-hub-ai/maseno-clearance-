@@ -5,48 +5,70 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\ClearanceCertificate;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class CertificateVerificationController extends Controller
 {
     /**
-     * Show the public lookup form (no token provided yet).
+     * Show the public certificate lookup form.
      */
-    public function lookup(): View
+    public function index()
     {
         return view('public.certificate-lookup');
     }
 
     /**
-     * Handle the manual certificate-number lookup form submission.
+     * Handle certificate number / token search form submission.
      */
-    public function search(Request $request): View
+    public function search(Request $request)
     {
         $request->validate([
-            'certificate_number' => 'required|string',
+            'query' => 'required|string|min:3|max:100',
         ]);
 
-        $certificate = ClearanceCertificate::where('certificate_number', $request->certificate_number)
-            ->with('application.student')
+        $query = trim($request->query);
+
+        // Search by certificate number OR verification token
+        $certificate = ClearanceCertificate::where('certificate_number', $query)
+            ->orWhere('verification_token', $query)
             ->first();
 
-        return view('public.certificate-lookup', [
-            'certificate' => $certificate,
-            'searched' => true,
-        ]);
+        if (!$certificate) {
+            return back()
+                ->withInput()
+                ->withErrors(['query' => 'No certificate found matching that number or token. Please check and try again.']);
+        }
+
+        // Redirect to the token-based verification URL
+        return redirect()->route('public.certificate.verify', $certificate->verification_token);
     }
 
     /**
-     * Show verification result via QR code token (public, no login).
+     * Verify a certificate by its unique token (also used by QR code).
+     * This is what the QR code on the PDF links to.
      */
-    public function verify(string $token): View
+    public function verify(string $token)
     {
         $certificate = ClearanceCertificate::where('verification_token', $token)
-            ->with('application.student')
+            ->with([
+                'application.student',
+                'application.departmentClearances.department',
+            ])
             ->first();
 
+        if (!$certificate) {
+            return view('public.certificate-verify', [
+                'valid'       => false,
+                'certificate' => null,
+                'student'     => null,
+                'application' => null,
+            ]);
+        }
+
         return view('public.certificate-verify', [
+            'valid'       => true,
             'certificate' => $certificate,
+            'student'     => $certificate->application->student,
+            'application' => $certificate->application,
         ]);
     }
 }

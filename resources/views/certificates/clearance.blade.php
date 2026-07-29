@@ -346,7 +346,7 @@
             </div>
             <div class="footer-right">
                 <span class="cert-number-badge">{{ $certificate->certificate_number }}</span>
-                &nbsp; Issued: {{ $certificate->issued_at->format('d M Y') }}
+                &nbsp; Verify at: {{ url("/verify/certificate/" . $certificate->verification_token) }} · Issued: {{ $certificate->issued_at->format('d M Y') }}
             </div>
         </div>
 
