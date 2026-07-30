@@ -3,121 +3,175 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Verify a Certificate — Maseno University</title>
+    <title>Verify Certificate — Maseno University</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, system-ui, sans-serif;
-            background: #f3f4f6;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
+            background: linear-gradient(135deg, #003B5C 0%, #005a8e 50%, #00AEEF 100%);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 24px;
         }
-        .card {
+
+        .verify-card {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
             max-width: 480px;
-            width: 100%;
-            padding: 32px;
-        }
-        .header {
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
             text-align: center;
-            margin-bottom: 24px;
         }
-        .header h1 {
-            font-size: 18px;
-            color: #1F4E5C;
-            margin: 0 0 4px;
+
+        .logo-wrap {
+            width: 72px; height: 72px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #003B5C, #00AEEF);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(0,59,92,0.25);
         }
-        .header p {
-            color: #6b7280;
-            font-size: 13px;
-            margin: 0;
+
+        .card-title {
+            font-size: 22px; font-weight: 800;
+            color: #003B5C; margin-bottom: 6px;
         }
-        label {
-            display: block;
-            font-size: 13px;
-            color: #374151;
-            margin-bottom: 6px;
-            font-weight: 600;
+        .card-sub {
+            font-size: 14px; color: #6B7280;
+            margin-bottom: 32px; line-height: 1.5;
         }
-        input[type=text] {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
-            margin-bottom: 16px;
+
+        .search-wrap { position: relative; margin-bottom: 8px; }
+        .search-input {
+            width: 100%; padding: 14px 50px 14px 18px;
+            border: 2px solid #E5E7EB; border-radius: 12px;
+            font-size: 15px; color: #111827;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
         }
-        button {
-            width: 100%;
-            background: #1F4E5C;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+        .search-input:focus {
+            outline: none; border-color: #00AEEF;
+            box-shadow: 0 0 0 4px rgba(0,174,239,0.12);
         }
-        button:hover {
-            background: #163945;
+        .search-input.error { border-color: #EF4444; }
+        .search-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #003B5C, #005a8e);
+            color: white; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: opacity 0.15s, transform 0.15s;
+            margin-top: 10px;
         }
-        .status-badge {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-weight: 600;
+        .search-btn:hover   { opacity: 0.92; transform: translateY(-1px); }
+        .search-btn:active  { transform: translateY(0); }
+
+        .error-msg {
+            background: #FEF2F2; border: 1px solid #FECACA;
+            border-radius: 10px; padding: 12px 16px;
+            font-size: 13px; color: #991B1B;
+            text-align: left; margin-bottom: 16px;
+            display: flex; align-items: flex-start; gap: 8px;
         }
-        .valid { background: #d1fae5; color: #065f46; }
-        .invalid { background: #fee2e2; color: #991b1b; }
-        .details { border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 16px; }
-        .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
-        .row .label { color: #6b7280; }
-        .row .value { font-weight: 600; color: #1f2937; text-align: right; }
+
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 24px 0; color: #9CA3AF; font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: #E5E7EB;
+        }
+
+        .qr-hint {
+            background: #F0F9FF; border: 1px solid #BAE6FD;
+            border-radius: 12px; padding: 16px;
+            font-size: 13px; color: #0369A1;
+            display: flex; align-items: center; gap: 12px;
+            text-align: left;
+        }
+        .qr-hint-icon { font-size: 24px; flex-shrink: 0; }
+
+        .trust-badges {
+            display: flex; justify-content: center; gap: 20px;
+            margin-top: 28px; flex-wrap: wrap;
+        }
+        .trust-badge {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: rgba(255,255,255,0.8);
+        }
+
+        .back-link {
+            display: inline-block; margin-top: 28px;
+            font-size: 13px; color: #6B7280; text-decoration: none;
+        }
+        .back-link:hover { color: #003B5C; }
+
+        @media (max-width: 520px) {
+            .verify-card { padding: 28px 20px; border-radius: 16px; }
+            .card-title  { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">
-            <h1>MASENO UNIVERSITY</h1>
-            <p>Verify a Clearance Certificate</p>
+
+    <div class="verify-card">
+        <div class="logo-wrap">🎓</div>
+        <div class="card-title">Certificate Verification</div>
+        <div class="card-sub">
+            Verify the authenticity of a Maseno University<br>
+            clearance certificate instantly.
         </div>
 
-        <form method="POST" action="{{ route('public.certificate.search') }}">
-            @csrf
-            <label for="certificate_number">Certificate Number</label>
-            <input type="text" id="certificate_number" name="certificate_number"
-                   placeholder="e.g. MAS-CLR-2026-00001"
-                   value="{{ old('certificate_number') }}" required>
-            <button type="submit">Verify Certificate</button>
-        </form>
-
-        @if (isset($searched) && $searched)
-            <div style="margin-top: 24px;">
-                @if ($certificate)
-                    <div class="status-badge valid">✓ Certificate is Valid</div>
-                    <div class="details">
-                        <div class="row"><span class="label">Student Name</span><span class="value">{{ $certificate->application->student->full_name }}</span></div>
-                        <div class="row"><span class="label">Registration No.</span><span class="value">{{ $certificate->application->student->reg_number }}</span></div>
-                        <div class="row"><span class="label">Programme</span><span class="value">{{ $certificate->application->student->programme }}</span></div>
-                        <div class="row"><span class="label">Academic Year</span><span class="value">{{ $certificate->application->academic_year }}</span></div>
-                        <div class="row"><span class="label">Issued</span><span class="value">{{ $certificate->issued_at->format('jS F Y') }}</span></div>
-                    </div>
-                @else
-                    <div class="status-badge invalid">✗ Certificate Not Found</div>
-                    <p style="text-align:center; color:#6b7280; font-size:13px;">
-                        No certificate matches that number. Double-check and try again.
-                    </p>
-                @endif
+        {{-- Error message --}}
+        @if($errors->has('query'))
+            <div class="error-msg">
+                <span>⚠️</span>
+                {{ $errors->first('query') }}
             </div>
         @endif
+
+        {{-- Search form --}}
+        <form method="POST" action="{{ route('public.certificate.search') }}">
+            @csrf
+            <div class="search-wrap">
+                <input
+                    type="text"
+                    name="query"
+                    value="{{ old('query') }}"
+                    class="search-input {{ $errors->has('query') ? 'error' : '' }}"
+                    placeholder="Enter certificate number e.g. MAS-CLR-2026-00001"
+                    autofocus
+                    autocomplete="off"
+                />
+            </div>
+            <button type="submit" class="search-btn">
+                🔍 Verify Certificate
+            </button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <div class="qr-hint">
+            <div class="qr-hint-icon">📱</div>
+            <div>
+                <strong style="display:block;margin-bottom:2px;">Scan the QR code</strong>
+                Every Maseno clearance certificate has a QR code.
+                Scan it with your phone camera to verify instantly.
+            </div>
+        </div>
+
+        <a href="{{ route('home') }}" class="back-link">← Back to home</a>
     </div>
+
+    {{-- Trust badges below card --}}
+    <div class="trust-badges">
+        <div class="trust-badge">🔒 Secure verification</div>
+        <div class="trust-badge">⚡ Instant results</div>
+        <div class="trust-badge">🎓 Maseno University</div>
+    </div>
+
 </body>
 </html>

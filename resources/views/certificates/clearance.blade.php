@@ -16,7 +16,6 @@
             padding: 0;
         }
 
-        /* ── Outer border frame ── */
         .outer-border {
             position: fixed;
             top: 8mm; left: 8mm; right: 8mm; bottom: 8mm;
@@ -28,7 +27,6 @@
             border: 1px solid #00AEEF;
         }
 
-        /* ── Page content ── */
         .page {
             padding: 18mm 20mm;
             min-height: 210mm;
@@ -43,155 +41,77 @@
             margin-bottom: 14px;
         }
         .university-name {
-            font-size: 24pt;
-            font-weight: bold;
-            color: #003B5C;
-            letter-spacing: 1px;
+            font-size: 24pt; font-weight: bold;
+            color: #003B5C; letter-spacing: 1px;
             text-transform: uppercase;
         }
         .university-sub {
-            font-size: 11pt;
-            color: #00AEEF;
-            margin-top: 2px;
-            letter-spacing: 2px;
+            font-size: 11pt; color: #00AEEF;
+            margin-top: 2px; letter-spacing: 2px;
             text-transform: uppercase;
         }
         .doc-title {
-            font-size: 18pt;
-            font-weight: bold;
-            color: #003B5C;
-            margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            font-size: 18pt; font-weight: bold;
+            color: #003B5C; margin-top: 10px;
+            text-transform: uppercase; letter-spacing: 3px;
         }
-        .doc-subtitle {
-            font-size: 10pt;
-            color: #555;
-            margin-top: 4px;
-        }
+        .doc-subtitle { font-size: 10pt; color: #555; margin-top: 4px; }
 
-        /* ── Certificate body ── */
+        /* ── Body text ── */
         .body-text {
-            font-size: 12pt;
-            line-height: 1.8;
-            text-align: center;
-            margin: 14px 20px;
-            color: #1a1a2e;
+            font-size: 12pt; line-height: 1.8;
+            text-align: center; margin: 14px 20px; color: #1a1a2e;
         }
         .student-name {
-            font-size: 20pt;
-            font-weight: bold;
-            color: #003B5C;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-            display: block;
-            margin: 6px 0;
+            font-size: 20pt; font-weight: bold; color: #003B5C;
+            text-decoration: underline; text-underline-offset: 4px;
+            display: block; margin: 6px 0;
         }
-        .highlight {
-            font-weight: bold;
-            color: #003B5C;
-        }
+        .highlight { font-weight: bold; color: #003B5C; }
 
-        /* ── Details grid ── */
+        /* ── Details box ── */
         .details-box {
-            background: #f0f9ff;
-            border: 1px solid #00AEEF;
-            border-radius: 4px;
-            padding: 10px 20px;
-            margin: 12px 0;
+            background: #f0f9ff; border: 1px solid #00AEEF;
+            border-radius: 4px; padding: 10px 20px; margin: 12px 0;
         }
-        .details-grid {
-            display: table;
-            width: 100%;
-        }
-        .detail-row {
-            display: table-row;
-        }
+        .details-grid { display: table; width: 100%; }
+        .detail-row   { display: table-row; }
         .detail-label {
-            display: table-cell;
-            font-size: 9pt;
-            color: #555;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 3px 16px 3px 0;
-            width: 35%;
+            display: table-cell; font-size: 9pt; color: #555;
+            font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.5px; padding: 3px 16px 3px 0; width: 35%;
         }
         .detail-value {
-            display: table-cell;
-            font-size: 10pt;
-            font-weight: bold;
-            color: #003B5C;
-            padding: 3px 0;
+            display: table-cell; font-size: 10pt;
+            font-weight: bold; color: #003B5C; padding: 3px 0;
         }
 
-        /* ── Departments cleared ── */
-        .dept-section {
-            margin: 10px 0;
-        }
+        /* ── Departments ── */
+        .dept-section { margin: 10px 0; }
         .dept-title {
-            font-size: 9pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #555;
-            margin-bottom: 6px;
-            text-align: center;
+            font-size: 9pt; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #555; margin-bottom: 6px; text-align: center;
         }
-        .dept-grid {
-            display: table;
-            width: 100%;
+        .dept-grid  { display: table; width: 100%; }
+        .dept-cell  {
+            display: table-cell; text-align: center;
+            padding: 4px 6px; font-size: 8.5pt; width: 14.28%;
         }
-        .dept-cell {
-            display: table-cell;
-            text-align: center;
-            padding: 4px 6px;
-            font-size: 8.5pt;
-            width: 14.28%;
-        }
-        .dept-check {
-            color: #059669;
-            font-size: 11pt;
-            font-weight: bold;
-            display: block;
-        }
-        .dept-name-cell {
-            color: #333;
-            font-size: 7.5pt;
-            display: block;
-            margin-top: 2px;
-        }
+        .dept-check { color: #059669; font-size: 11pt; font-weight: bold; display: block; }
+        .dept-name-cell { color: #333; font-size: 7.5pt; display: block; margin-top: 2px; }
 
-        /* ── Signature row ── */
-        .signature-section {
-            margin-top: 14px;
-            display: table;
-            width: 100%;
-        }
+        /* ── Signatures ── */
+        .signature-section { margin-top: 14px; display: table; width: 100%; }
         .sig-col {
-            display: table-cell;
-            text-align: center;
-            width: 33.33%;
-            padding: 0 10px;
-            vertical-align: bottom;
+            display: table-cell; text-align: center;
+            width: 33.33%; padding: 0 10px; vertical-align: bottom;
         }
-        .sig-line {
-            border-top: 1px solid #003B5C;
-            padding-top: 5px;
-            margin-top: 30px;
-        }
-        .sig-name {
-            font-size: 9.5pt;
-            font-weight: bold;
-            color: #003B5C;
-        }
-        .sig-title {
-            font-size: 8.5pt;
-            color: #555;
-            margin-top: 2px;
-        }
+        .sig-line { border-top: 1px solid #003B5C; padding-top: 5px; margin-top: 30px; }
+        .sig-name  { font-size: 9.5pt; font-weight: bold; color: #003B5C; }
+        .sig-title { font-size: 8.5pt; color: #555; margin-top: 2px; }
 
-        /* ── Footer ── */
+        /* ── Footer with QR ── */
         .footer {
             margin-top: 12px;
             border-top: 1px solid #e0e0e0;
@@ -201,41 +121,55 @@
         }
         .footer-left {
             display: table-cell;
-            font-size: 7.5pt;
-            color: #888;
+            font-size: 7.5pt; color: #888;
             vertical-align: middle;
+            width: 55%;
+        }
+        .footer-center {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+            width: 20%;
         }
         .footer-right {
             display: table-cell;
             text-align: right;
-            font-size: 7.5pt;
-            color: #888;
+            font-size: 7.5pt; color: #888;
             vertical-align: middle;
+            width: 25%;
         }
         .cert-number-badge {
             display: inline-block;
-            background: #003B5C;
-            color: white;
-            font-size: 8pt;
-            font-weight: bold;
-            padding: 2px 10px;
-            border-radius: 3px;
+            background: #003B5C; color: white;
+            font-size: 8pt; font-weight: bold;
+            padding: 2px 10px; border-radius: 3px;
             letter-spacing: 1px;
+        }
+
+        /* ── QR code box ── */
+        .qr-wrap {
+            display: inline-block;
+            padding: 4px;
+            border: 2px solid #003B5C;
+            border-radius: 4px;
+            background: white;
+        }
+        .qr-label {
+            font-size: 6.5pt;
+            color: #555;
+            text-align: center;
+            margin-top: 3px;
+            font-family: Arial, sans-serif;
         }
 
         /* ── Watermark ── */
         .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 72pt;
-            font-weight: bold;
-            color: rgba(0, 59, 92, 0.04);
-            text-transform: uppercase;
-            letter-spacing: 10px;
-            white-space: nowrap;
-            z-index: -1;
+            font-size: 72pt; font-weight: bold;
+            color: rgba(0,59,92,0.04);
+            text-transform: uppercase; letter-spacing: 10px;
+            white-space: nowrap; z-index: -1;
         }
     </style>
 </head>
@@ -259,12 +193,9 @@
         <div class="body-text">
             This is to certify that
             <span class="student-name">{{ strtoupper($student->full_name) }}</span>
-            of
-            <span class="highlight">{{ $student->faculty }}</span>,
-            pursuing a programme in
-            <span class="highlight">{{ $student->programme }}</span>
-            with Registration Number
-            <span class="highlight">{{ $student->reg_number }}</span>
+            of <span class="highlight">{{ $student->faculty }}</span>,
+            pursuing a programme in <span class="highlight">{{ $student->programme }}</span>
+            with Registration Number <span class="highlight">{{ $student->reg_number }}</span>
             has been fully cleared by all university departments
             for the academic year <span class="highlight">{{ $application->academic_year }}</span>.
         </div>
@@ -294,10 +225,6 @@
                 <div class="detail-row">
                     <div class="detail-label">Certificate No.</div>
                     <div class="detail-value">{{ $certificate->certificate_number }}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Verification Token</div>
-                    <div class="detail-value" style="font-size:8pt;color:#555;">{{ $certificate->verification_token }}</div>
                 </div>
             </div>
         </div>
@@ -337,16 +264,33 @@
             </div>
         </div>
 
-        {{-- Footer --}}
+        {{-- Footer with QR code --}}
+        @php
+            $verifyUrl = url('/verify/certificate/' . $certificate->verification_token);
+        @endphp
+
         <div class="footer">
             <div class="footer-left">
-                Maseno University, Private Bag, Maseno, Kenya &bull;
-                Tel: +254 (057) 351622 &bull;
-                www.maseno.ac.ke
+                Maseno University, Private Bag, Maseno, Kenya<br>
+                Tel: +254 (057) 351622 &bull; www.maseno.ac.ke<br>
+                <span style="color:#003B5C;font-weight:bold;">
+                    Verify: {{ $verifyUrl }}
+                </span>
             </div>
+
+            {{-- QR Code in centre --}}
+            <div class="footer-center">
+                <div class="qr-wrap">
+                    <img src="data:image/png;base64,{{ base64_encode(QrCode::format('png')->size(70)->generate($verifyUrl)) }}" width="70" height="70" style="display:block;"/>
+                </div>
+                <div class="qr-label">Scan to verify</div>
+            </div>
+
             <div class="footer-right">
-                <span class="cert-number-badge">{{ $certificate->certificate_number }}</span>
-                &nbsp; Verify at: {{ url("/verify/certificate/" . $certificate->verification_token) }} · Issued: {{ $certificate->issued_at->format('d M Y') }}
+                <span class="cert-number-badge">{{ $certificate->certificate_number }}</span><br>
+                <span style="font-size:7pt;margin-top:4px;display:block;">
+                    Issued: {{ $certificate->issued_at->format('d M Y') }}
+                </span>
             </div>
         </div>
 
